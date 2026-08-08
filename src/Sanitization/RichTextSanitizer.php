@@ -81,20 +81,12 @@ class RichTextSanitizer
             'img' => ['src', 'alt', 'title', 'data-rte-align'],
             'span' => ['data-rte-size'],
         ];
-        foreach ($xpath->query('//*') ?: [] as $node) {
-            if (! $node instanceof DOMElement) {
-                continue;
-            }
-            if ($node->hasAttribute('data-rte-root')) {
-                continue;
-            }
-
-            $allowed = $allowedAttributes[strtolower($node->tagName)] ?? [];
-            foreach (iterator_to_array($node->attributes) as $attribute) {
-                if (! in_array(strtolower($attribute->name), $allowed, true)) {
-                    $node->removeAttributeNode($attribute);
-                }
-            }
+        $root = $document->documentElement;
+        if (! $root instanceof DOMElement || ! $root->hasAttribute('data-rte-root')) {
+            $root = $xpath->query('//*[@data-rte-root]')?->item(0);
+        }
+        if ($root instanceof DOMElement) {
+            $this->removeDisallowedAttributes($root, $allowedAttributes);
         }
         $alignments = array_map('strval', $settings['images']['alignments'] ?? []);
         $sizes = array_keys($settings['font_sizes'] ?? []);
@@ -112,7 +104,6 @@ class RichTextSanitizer
             }
         }
 
-        $root = $xpath->query('//*[@data-rte-root]')?->item(0);
         $output = '';
         if ($root !== null) {
             foreach ($root->childNodes as $child) {
@@ -121,6 +112,25 @@ class RichTextSanitizer
         }
 
         return $output;
+    }
+
+    /** @param array<string, list<string>> $allowedAttributes */
+    private function removeDisallowedAttributes(DOMElement $root, array $allowedAttributes): void
+    {
+        foreach (iterator_to_array($root->childNodes) as $node) {
+            if (! $node instanceof DOMElement) {
+                continue;
+            }
+
+            $allowed = $allowedAttributes[strtolower($node->tagName)] ?? [];
+            foreach (iterator_to_array($node->attributes) as $attribute) {
+                if (! in_array(strtolower($attribute->name), $allowed, true)) {
+                    $node->removeAttributeNode($attribute);
+                }
+            }
+
+            $this->removeDisallowedAttributes($node, $allowedAttributes);
+        }
     }
 
     private function isVisuallyEmpty(string $html): bool
