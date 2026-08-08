@@ -81,8 +81,11 @@ class RichTextSanitizer
             'img' => ['src', 'alt', 'title', 'data-rte-align'],
             'span' => ['data-rte-size'],
         ];
-        foreach ($xpath->query('//*[@data-rte-root]//*') ?: [] as $node) {
+        foreach ($xpath->query('//*') ?: [] as $node) {
             if (! $node instanceof DOMElement) {
+                continue;
+            }
+            if ($node->hasAttribute('data-rte-root')) {
                 continue;
             }
 
