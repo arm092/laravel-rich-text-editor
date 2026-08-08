@@ -76,6 +76,23 @@ class RichTextSanitizer
         libxml_use_internal_errors($previous);
 
         $xpath = new DOMXPath($document);
+        $allowedAttributes = [
+            'a' => ['href', 'title', 'target', 'rel'],
+            'img' => ['src', 'alt', 'title', 'data-rte-align'],
+            'span' => ['data-rte-size'],
+        ];
+        foreach ($xpath->query('//*[@data-rte-root]//*') ?: [] as $node) {
+            if (! $node instanceof DOMElement) {
+                continue;
+            }
+
+            $allowed = $allowedAttributes[strtolower($node->tagName)] ?? [];
+            foreach (iterator_to_array($node->attributes) as $attribute) {
+                if (! in_array(strtolower($attribute->name), $allowed, true)) {
+                    $node->removeAttributeNode($attribute);
+                }
+            }
+        }
         $alignments = array_map('strval', $settings['images']['alignments'] ?? []);
         $sizes = array_keys($settings['font_sizes'] ?? []);
         foreach ($xpath->query('//*[@data-rte-align]') ?: [] as $node) {
