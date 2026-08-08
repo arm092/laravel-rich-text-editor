@@ -1,0 +1,17 @@
+name: Release checks
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  verify-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
+      - run: test "$(git branch -r --contains "$GITHUB_SHA" | sed 's/^[[:space:]]*//' | grep -c '^origin/master$')" -eq 1
+      - run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
