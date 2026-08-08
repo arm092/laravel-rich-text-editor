@@ -1,0 +1,61 @@
+{
+    "name": "arm092/laravel-rich-text-editor",
+    "description": "A modern, secure rich text editor for Laravel, Alpine.js, Tailwind CSS, and Livewire.",
+    "keywords": ["laravel", "rich-text", "editor", "wysiwyg", "alpinejs", "livewire", "tailwindcss"],
+    "homepage": "https://github.com/arm092/laravel-rich-text-editor",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Arman Khachatryan",
+            "email": "arman.khachatryan.dev@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "ext-dom": "*",
+        "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/database": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/validation": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/view": "^10.0|^11.0|^12.0|^13.0",
+        "symfony/html-sanitizer": "^6.4|^7.0|^8.0"
+    },
+    "require-dev": {
+        "livewire/livewire": "^3.8|^4.3",
+        "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
+        "phpunit/phpunit": "^10.5|^11.0|^12.0"
+    },
+    "suggest": {
+        "livewire/livewire": "Required only when binding the editor to Livewire 3 or 4 components."
+    },
+    "autoload": {
+        "psr-4": {
+            "Arm092\\RichTextEditor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Arm092\\RichTextEditor\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Arm092\\RichTextEditor\\RichTextEditorServiceProvider"
+            ]
+        }
+    },
+    "prefer-stable": true
+}
