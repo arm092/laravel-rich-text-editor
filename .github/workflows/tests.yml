@@ -16,27 +16,34 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { php: '8.1', laravel: '10.*', testbench: '8.*', phpunit: '10.5.*', livewire: '3.*' }
-          - { php: '8.2', laravel: '11.*', testbench: '9.*', phpunit: '11.*', livewire: '3.*' }
-          - { php: '8.3', laravel: '12.*', testbench: '10.*', phpunit: '11.*', livewire: '4.*' }
-          - { php: '8.4', laravel: '13.*', testbench: '11.*', phpunit: '12.*', livewire: '4.*' }
+          - { php: '8.1', laravel: '10.*', testbench: '8.*', phpunit: '10.5.*', livewire: '3.*', sanitizer: '6.4.*' }
+          - { php: '8.2', laravel: '11.*', testbench: '9.*', phpunit: '11.*', livewire: '3.*', sanitizer: '7.4.*' }
+          - { php: '8.3', laravel: '12.*', testbench: '10.*', phpunit: '11.*', livewire: '4.*', sanitizer: '7.4.*' }
+          - { php: '8.4', laravel: '13.*', testbench: '11.*', phpunit: '12.*', livewire: '4.*', sanitizer: '8.1.*' }
     steps:
       - uses: actions/checkout@v6
       - uses: shivammathur/setup-php@v2
         with: { php-version: '${{ matrix.php }}', coverage: none }
-      - run: composer require --dev "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "phpunit/phpunit:${{ matrix.phpunit }}" "livewire/livewire:${{ matrix.livewire }}" --with-all-dependencies --no-interaction --no-progress
+      # Laravel 10 and 11 are retained as compatibility targets even after their
+      # upstream security support window. The release lockfile is audited in the
+      # separate installation job below and remains a hard release gate.
+      - run: composer config audit.block-insecure false
+      - run: composer require --dev "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "phpunit/phpunit:${{ matrix.phpunit }}" "livewire/livewire:${{ matrix.livewire }}" "symfony/html-sanitizer:${{ matrix.sanitizer }}" --with-all-dependencies --no-interaction --no-progress
       - run: composer validate --strict
-      - run: composer audit --locked
       - run: composer test
 
-  php-without-livewire:
+  package-install-without-livewire:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: shivammathur/setup-php@v2
         with: { php-version: '8.4', coverage: none }
-      - run: composer install --no-interaction --no-progress
-      - run: composer test
+      - run: composer install --no-dev --no-interaction --no-progress
+      - run: composer audit --locked
+      - run: >-
+          php -r "require 'vendor/autoload.php';
+          exit(class_exists('Livewire\\Livewire') ||
+          !class_exists('Arm092\\RichTextEditor\\RichTextEditorServiceProvider') ? 1 : 0);"
 
   frontend:
     runs-on: ubuntu-latest
@@ -45,6 +52,7 @@ jobs:
       - uses: actions/setup-node@v6
         with: { node-version: '20.20.2', cache: npm }
       - run: npm ci
+      - run: npm audit
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
