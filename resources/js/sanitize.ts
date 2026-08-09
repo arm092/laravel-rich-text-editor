@@ -6,7 +6,7 @@ const BASE_TAGS = new Set([
 
 const ATTRIBUTES: Record<string, Set<string>> = {
   a: new Set(['href', 'title', 'target', 'rel']),
-  img: new Set(['src', 'alt', 'title', 'data-rte-align']),
+  img: new Set(['src', 'alt', 'title', 'data-rte-align', 'style']),
   span: new Set(['data-rte-size']),
 }
 
@@ -68,6 +68,14 @@ export function sanitizeHtml(source: string, options: EditorOptions): SanitizeRe
         diagnostics.push({ message: `The image alignment "${alignment}" is not allowed.`, severity: 'warning' })
         element.removeAttribute('data-rte-align')
       }
+      const resize = options.images?.resize
+      const width = parseImageWidth(element.getAttribute('style'))
+      if (element.hasAttribute('style') && (resize?.enabled === false || width === null || !isAllowedImageWidth(width, resize ?? {}))) {
+        diagnostics.push({ message: 'The image width is not allowed by this profile.', severity: 'warning' })
+        element.removeAttribute('style')
+      } else if (width !== null) {
+        element.setAttribute('style', `width: ${width}%;`)
+      }
     }
 
     if (tag === 'span' && element.hasAttribute('data-rte-size')) {
@@ -81,6 +89,19 @@ export function sanitizeHtml(source: string, options: EditorOptions): SanitizeRe
 
   const html = normalizeEmpty(root.innerHTML)
   return { html, changed: normalizeComparison(source) !== normalizeComparison(html), diagnostics }
+}
+
+function parseImageWidth(style: string | null): number | null {
+  if (style === null) return null
+  const match = style.match(/^\s*width\s*:\s*(\d+)%\s*;?\s*$/i)
+  return match ? Number(match[1]) : null
+}
+
+function isAllowedImageWidth(width: number, resize: NonNullable<NonNullable<EditorOptions['images']>['resize']>): boolean {
+  const min = resize.min ?? 20
+  const max = resize.max ?? 100
+  const step = resize.step ?? 5
+  return Number.isFinite(width) && width >= min && width <= max && step > 0 && Math.abs((width - min) / step - Math.round((width - min) / step)) < 0.000001
 }
 
 export function normalizeEmpty(html: string): string {

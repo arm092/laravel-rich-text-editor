@@ -38,6 +38,15 @@ class BladeComponentsTest extends TestCase
         $this->assertStringContainsString('<p>Русский Հայերեն</p>', $view);
     }
 
+    public function test_content_component_renders_a_safe_responsive_image_width(): void
+    {
+        $view = Blade::render('<x-rich-text-content :content="$content" />', [
+            'content' => '<img src="https://example.com/a.jpg" alt="A" style="width: 60%;">',
+        ]);
+
+        $this->assertStringContainsString('style="width: 60%;"', $view);
+    }
+
     public function test_custom_colors_and_code_view_options_are_serialized(): void
     {
         config()->set('rich-text-editor.theme.primary', '#123456');

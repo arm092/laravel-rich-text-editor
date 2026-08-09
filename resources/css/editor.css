@@ -48,6 +48,14 @@
   .rte-prose a, .rte-content a { color: color-mix(in srgb, var(--rte-primary), var(--rte-ink) 18%); text-decoration: underline; text-decoration-thickness: .08em; text-underline-offset: .15em; }
   .rte-prose hr, .rte-content hr { margin: 1.5rem 0; border: 0; border-top: 1px solid var(--rte-border); }
   .rte-prose img, .rte-content img { max-width: 100%; height: auto; border-radius: .65rem; }
+  .rte-resizable-image { position: relative; display: block; max-width: 100%; }
+  .rte-resizable-image > img { display: block; width: 100%; }
+  .rte-resizable-image[data-rte-align="left"] { margin-right: auto; }
+  .rte-resizable-image[data-rte-align="center"] { margin-inline: auto; }
+  .rte-resizable-image[data-rte-align="right"] { margin-left: auto; }
+  .rte-image-resize-handle { position: absolute; right: -.55rem; bottom: -.55rem; width: 1.15rem; height: 1.15rem; border: 2px solid var(--rte-white); border-radius: 999px; background: var(--rte-primary); box-shadow: 0 1px 5px rgba(6, 6, 6, .35); cursor: ew-resize; opacity: 0; transition: opacity .14s ease, transform .14s ease; }
+  .rte-resizable-image:hover .rte-image-resize-handle, .rte-resizable-image:focus-within .rte-image-resize-handle { opacity: 1; }
+  .rte-image-resize-handle:focus-visible { opacity: 1; outline: 2px solid var(--rte-info); outline-offset: 2px; transform: scale(1.08); }
   .rte-prose img[data-rte-align="left"], .rte-content img[data-rte-align="left"] { display: block; margin-right: auto; }
   .rte-prose img[data-rte-align="center"], .rte-content img[data-rte-align="center"] { display: block; margin-inline: auto; }
   .rte-prose img[data-rte-align="right"], .rte-content img[data-rte-align="right"] { display: block; margin-left: auto; }
@@ -83,6 +91,7 @@
   .rte-dialog-cancel { border: 1px solid var(--rte-border); background: var(--rte-white); color: var(--rte-graphite); }
 
   .rich-text-editor--readonly .rte-toolbar { opacity: .6; pointer-events: none; }
+  .rich-text-editor--readonly .rte-image-resize-handle { display: none; }
   .rte-content [data-rte-size="small"], .rte-prose [data-rte-size="small"] { font-size: .875rem; }
   .rte-content [data-rte-size="large"], .rte-prose [data-rte-size="large"] { font-size: 1.125rem; }
   .rte-content [data-rte-size="x-large"], .rte-prose [data-rte-size="x-large"] { font-size: 1.25rem; }

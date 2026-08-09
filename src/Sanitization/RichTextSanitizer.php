@@ -53,7 +53,7 @@ class RichTextSanitizer
 
         return $config
             ->allowElement('a', ['href', 'title', 'target', 'rel'])
-            ->allowElement('img', ['src', 'alt', 'title', 'data-rte-align'])
+            ->allowElement('img', ['src', 'alt', 'title', 'data-rte-align', 'style'])
             ->allowElement('span', ['data-rte-size'])
             ->allowLinkSchemes($settings['links']['schemes'] ?? ['http', 'https'])
             ->allowRelativeLinks((bool) ($settings['links']['allow_relative'] ?? false))
@@ -79,7 +79,7 @@ class RichTextSanitizer
         $xpath = new DOMXPath($document);
         $allowedAttributes = [
             'a' => ['href', 'title', 'target', 'rel'],
-            'img' => ['src', 'alt', 'title', 'data-rte-align'],
+            'img' => ['src', 'alt', 'title', 'data-rte-align', 'style'],
             'span' => ['data-rte-size'],
         ];
         $root = $document->documentElement;
@@ -99,6 +99,19 @@ class RichTextSanitizer
         foreach ($xpath->query('//img[not(@alt)]') ?: [] as $node) {
             $node->parentNode?->removeChild($node);
         }
+        foreach ($xpath->query('//img[@style]') ?: [] as $node) {
+            if (! $node instanceof DOMElement) {
+                continue;
+            }
+
+            $width = $this->imageWidth($node->getAttribute('style'));
+            $resize = $settings['images']['resize'] ?? [];
+            if (! ($resize['enabled'] ?? true) || $width === null || ! $this->isAllowedImageWidth($width, $resize)) {
+                $node->removeAttribute('style');
+            } else {
+                $node->setAttribute('style', "width: {$width}%;");
+            }
+        }
         foreach ($xpath->query('//*[@data-rte-size]') ?: [] as $node) {
             if ($node instanceof DOMElement && ! in_array($node->getAttribute('data-rte-size'), $sizes, true)) {
                 $node->removeAttribute('data-rte-size');
@@ -113,6 +126,23 @@ class RichTextSanitizer
         }
 
         return $output;
+    }
+
+    private function imageWidth(string $style): ?int
+    {
+        return preg_match('/^\s*width\s*:\s*(\d+)%\s*;?\s*$/i', $style, $matches) === 1
+            ? (int) $matches[1]
+            : null;
+    }
+
+    /** @param array<string, mixed> $resize */
+    private function isAllowedImageWidth(int $width, array $resize): bool
+    {
+        $min = (int) ($resize['min'] ?? 20);
+        $max = (int) ($resize['max'] ?? 100);
+        $step = (int) ($resize['step'] ?? 5);
+
+        return $step > 0 && $width >= $min && $width <= $max && ($width - $min) % $step === 0;
     }
 
     /** @param array<string, list<string>> $allowedAttributes */

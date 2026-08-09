@@ -50,6 +50,34 @@ class RichTextSanitizerTest extends TestCase
         $this->assertSame('<p>Before</p><p>After</p>', $sanitized);
     }
 
+    public function test_it_allows_only_profile_constrained_responsive_image_widths(): void
+    {
+        $sanitizer = app(RichTextSanitizer::class);
+
+        $this->assertSame(
+            '<img src="https://example.com/a.jpg" alt="A" style="width: 60%;">',
+            $sanitizer->sanitize('<img src="https://example.com/a.jpg" alt="A" style="width:60%">'),
+        );
+        $this->assertSame(
+            '<img src="https://example.com/a.jpg" alt="A">',
+            $sanitizer->sanitize('<img src="https://example.com/a.jpg" alt="A" style="width: 61%; color: red">'),
+        );
+    }
+
+    public function test_it_removes_image_widths_when_resizing_is_disabled(): void
+    {
+        config()->set('rich-text-editor.profiles.standard.images.resize.enabled', false);
+        $sanitizer = new RichTextSanitizer(
+            config('rich-text-editor.profiles'),
+            config('rich-text-editor.default_profile'),
+        );
+
+        $this->assertSame(
+            '<img src="https://example.com/a.jpg" alt="A">',
+            $sanitizer->sanitize('<img src="https://example.com/a.jpg" alt="A" style="width: 60%;">'),
+        );
+    }
+
     public function test_it_normalizes_empty_content_and_preserves_null(): void
     {
         $sanitizer = app(RichTextSanitizer::class);

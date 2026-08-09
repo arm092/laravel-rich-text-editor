@@ -35,7 +35,11 @@ return [
             ],
             'font_sizes' => [],
             'links' => ['schemes' => ['http', 'https', 'mailto', 'tel'], 'allow_relative' => true],
-            'images' => ['schemes' => ['http', 'https'], 'alignments' => ['left', 'center', 'right']],
+            'images' => [
+                'schemes' => ['http', 'https'],
+                'alignments' => ['left', 'center', 'right'],
+                'resize' => ['enabled' => true, 'min' => 20, 'max' => 100, 'step' => 5],
+            ],
             'max_characters' => null,
         ],
         'minimal' => [
@@ -46,7 +50,11 @@ return [
             ],
             'font_sizes' => [],
             'links' => ['schemes' => ['http', 'https', 'mailto', 'tel'], 'allow_relative' => true],
-            'images' => ['schemes' => ['http', 'https'], 'alignments' => ['left', 'center', 'right']],
+            'images' => [
+                'schemes' => ['http', 'https'],
+                'alignments' => ['left', 'center', 'right'],
+                'resize' => ['enabled' => true, 'min' => 20, 'max' => 100, 'step' => 5],
+            ],
             'max_characters' => null,
         ],
     ],

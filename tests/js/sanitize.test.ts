@@ -31,6 +31,24 @@ describe('HTML sanitization', () => {
     expect(result.diagnostics.some((diagnostic) => diagnostic.severity === 'error')).toBe(true)
   })
 
+  it('canonicalizes allowed responsive image widths and removes arbitrary styles', () => {
+    const allowed = sanitizeHtml('<img src="https://example.com/a.jpg" alt="A" style="width:60%">', options)
+    const blocked = sanitizeHtml('<img src="https://example.com/a.jpg" alt="A" style="width:61%;color:red">', options)
+
+    expect(allowed.html).toBe('<img src="https://example.com/a.jpg" alt="A" style="width: 60%;">')
+    expect(blocked.html).toBe('<img src="https://example.com/a.jpg" alt="A">')
+    expect(blocked.diagnostics.some((diagnostic) => diagnostic.message.includes('width'))).toBe(true)
+  })
+
+  it('removes responsive image widths when resizing is disabled', () => {
+    const result = sanitizeHtml('<img src="https://example.com/a.jpg" alt="A" style="width: 60%;">', {
+      ...options,
+      images: { ...options.images, resize: { enabled: false } },
+    })
+
+    expect(result.html).toBe('<img src="https://example.com/a.jpg" alt="A">')
+  })
+
   it('normalizes visually empty editor output', () => {
     expect(normalizeEmpty('<p><br></p>')).toBe('')
     expect(normalizeEmpty('<hr>')).toBe('<hr>')

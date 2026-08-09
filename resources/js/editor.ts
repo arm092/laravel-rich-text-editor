@@ -1,4 +1,4 @@
-import { Editor, Extension } from '@tiptap/core'
+import { Editor, Extension, type NodeViewRendererProps } from '@tiptap/core'
 import Image from '@tiptap/extension-image'
 import { TextStyle } from '@tiptap/extension-text-style'
 import StarterKit from '@tiptap/starter-kit'
@@ -7,18 +7,110 @@ import type { CodeViewAdapter, CodeViewFactory, EditorOptions, PublicEditor } fr
 
 const instances = new WeakMap<HTMLElement, RichTextEditorController>()
 
-const AlignedImage = Image.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      align: {
-        default: 'center',
-        parseHTML: (element) => element.getAttribute('data-rte-align') || 'center',
-        renderHTML: (attributes) => ({ 'data-rte-align': attributes.align }),
-      },
-    }
-  },
-})
+type ImageResizeOptions = { enabled?: boolean; min?: number; max?: number; step?: number }
+
+function createAlignedImage(resize: ImageResizeOptions = {}) {
+  const enabled = resize.enabled !== false
+  const min = resize.min ?? 20
+  const max = resize.max ?? 100
+  const step = resize.step ?? 5
+  const snap = (value: number) => Math.min(max, Math.max(min, min + Math.round((value - min) / step) * step))
+
+  return Image.extend({
+    addAttributes() {
+      return {
+        ...this.parent?.(),
+        align: {
+          default: 'center',
+          parseHTML: (element) => element.getAttribute('data-rte-align') || 'center',
+          renderHTML: (attributes) => ({ 'data-rte-align': attributes.align }),
+        },
+        width: {
+          default: null,
+          parseHTML: (element) => element.getAttribute('style')?.match(/^\s*width\s*:\s*(\d+)%\s*;?\s*$/i)?.[1] ?? null,
+          renderHTML: (attributes) => attributes.width ? { style: `width: ${attributes.width}%;` } : {},
+        },
+      }
+    },
+    addNodeView() {
+      return (props: NodeViewRendererProps) => {
+        let currentNode = props.node
+        const wrapper = document.createElement('span')
+        wrapper.className = 'rte-resizable-image'
+        wrapper.contentEditable = 'false'
+        const image = document.createElement('img')
+        const handle = document.createElement('span')
+        handle.className = 'rte-image-resize-handle'
+        handle.tabIndex = 0
+        handle.setAttribute('role', 'slider')
+        handle.setAttribute('aria-label', 'Resize image')
+        handle.setAttribute('aria-valuemin', String(min))
+        handle.setAttribute('aria-valuemax', String(max))
+        handle.setAttribute('aria-orientation', 'horizontal')
+        wrapper.append(image)
+        if (enabled) wrapper.append(handle)
+
+        const updateDom = () => {
+          const { src, alt, title, align, width } = currentNode.attrs
+          image.src = src
+          image.alt = alt ?? ''
+          if (title) image.title = title
+          else image.removeAttribute('title')
+          wrapper.dataset.rteAlign = align
+          wrapper.style.width = width ? `${width}%` : ''
+          handle.setAttribute('aria-valuenow', String(width ?? 100))
+          handle.setAttribute('aria-valuetext', `${width ?? 100}% width`)
+        }
+        const setWidth = (width: number) => {
+          const position = props.getPos()
+          if (typeof position !== 'number' || !props.editor.isEditable) return
+          const next = snap(width)
+          props.view.dispatch(props.view.state.tr.setNodeMarkup(position, undefined, { ...currentNode.attrs, width: next }))
+        }
+
+        handle.addEventListener('pointerdown', (event) => {
+          if (!props.editor.isEditable) return
+          event.preventDefault()
+          const parentWidth = wrapper.parentElement?.getBoundingClientRect().width ?? 0
+          if (parentWidth <= 0) return
+          const startX = event.clientX
+          const startWidth = Number(currentNode.attrs.width) || wrapper.getBoundingClientRect().width / parentWidth * 100
+          handle.setPointerCapture(event.pointerId)
+          const move = (moveEvent: PointerEvent) => setWidth(startWidth + (moveEvent.clientX - startX) / parentWidth * 100)
+          const finish = () => {
+            handle.removeEventListener('pointermove', move)
+            handle.removeEventListener('pointerup', finish)
+            handle.removeEventListener('pointercancel', finish)
+          }
+          handle.addEventListener('pointermove', move)
+          handle.addEventListener('pointerup', finish)
+          handle.addEventListener('pointercancel', finish)
+        })
+        handle.addEventListener('keydown', (event) => {
+          const width = Number(currentNode.attrs.width) || 100
+          const next = event.key === 'ArrowLeft' || event.key === 'ArrowDown' ? width - step
+            : event.key === 'ArrowRight' || event.key === 'ArrowUp' ? width + step
+              : event.key === 'Home' ? min : event.key === 'End' ? max : null
+          if (next === null) return
+          event.preventDefault()
+          setWidth(next)
+        })
+        updateDom()
+
+        return {
+          dom: wrapper,
+          update: (node) => {
+            if (node.type !== currentNode.type) return false
+            currentNode = node
+            updateDom()
+            return true
+          },
+          stopEvent: (event) => event.target === handle,
+        }
+      }
+    },
+  })
+}
 
 const RestrictedTextSize = Extension.create({
   name: 'restrictedTextSize',
@@ -67,6 +159,7 @@ export class RichTextEditorController implements PublicEditor {
   constructor(private readonly root: HTMLElement, private readonly codeViewFactory: CodeViewFactory, options: EditorOptions = {}) {
     this.options = { ...this.readOptions(), ...options, codeView: { ...this.readOptions().codeView, ...options.codeView } }
     this.applyTheme()
+    this.root.classList.toggle('rich-text-editor--readonly', Boolean(this.options.readonly || this.options.disabled))
     this.input = this.resolveInput()
     this.mount = root.querySelector<HTMLElement>('[data-rte-mount]') ?? root
     this.mount.innerHTML = ''
@@ -165,7 +258,7 @@ export class RichTextEditorController implements PublicEditor {
         heading: { levels: (this.options.headings ?? [2, 3, 4]) as any },
         link: { openOnClick: false, defaultProtocol: 'https', HTMLAttributes: { rel: 'noopener noreferrer' } },
       }),
-      AlignedImage.configure({ inline: false, allowBase64: false }),
+      createAlignedImage(this.options.images?.resize).configure({ inline: false, allowBase64: false }),
       TextStyle,
       RestrictedTextSize,
     ]

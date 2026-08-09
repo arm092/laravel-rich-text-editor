@@ -20,7 +20,11 @@ export type EditorOptions = {
   headings?: number[]
   fontSizes?: Record<string, string>
   links?: { schemes?: string[]; allow_relative?: boolean }
-  images?: { schemes?: string[]; alignments?: string[] }
+  images?: {
+    schemes?: string[]
+    alignments?: string[]
+    resize?: { enabled?: boolean; min?: number; max?: number; step?: number }
+  }
   codeView?: CodeViewOptions
   theme?: Record<string, string>
 }

@@ -9,7 +9,7 @@ const styles = resolve('dist/rich-text-editor.css')
 async function mount(page: Page, script: string) {
   await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Editor test</title></head><body>
     <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","|","bold","italic","link","image","|","codeView"],"headings":[2,3,4],"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]}}'>
-      <label for="content">Content</label><textarea id="content" name="content" data-rte-input><h2>Hello</h2><p>Editor content</p></textarea><div data-rte-mount></div>
+      <label for="content">Content</label><textarea id="content" name="content" data-rte-input><h2>Hello</h2><p>Editor content</p><img src="https://example.com/image.jpg" alt="Example"></textarea><div data-rte-mount></div>
     </div></form></main></body></html>`)
   await page.addStyleTag({ path: styles })
   await page.addScriptTag({ path: script })
@@ -42,4 +42,24 @@ test('default editor has no serious accessibility violations', async ({ page }) 
   await mount(page, enhanced)
   const results = await new AxeBuilder({ page }).exclude('.cm-editor').analyze()
   expect(results.violations.filter((item) => item.impact === 'serious' || item.impact === 'critical')).toEqual([])
+})
+
+test('image resize handle persists a responsive width with keyboard controls', async ({ page }) => {
+  await mount(page, enhanced)
+  const handle = page.getByRole('slider', { name: 'Resize image' })
+  await handle.focus()
+  await page.keyboard.press('Home')
+  await page.keyboard.press('ArrowRight')
+
+  await expect(handle).toHaveAttribute('aria-valuenow', '25')
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/style="width: 25%;"/)
+  const box = await handle.boundingBox()
+  expect(box).not.toBeNull()
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(box!.x + box!.width / 2 + 100, box!.y + box!.height / 2)
+  await page.mouse.up()
+  await expect(handle).not.toHaveAttribute('aria-valuenow', '25')
+  await page.getByRole('button', { name: 'HTML code view' }).click()
+  await expect(page.locator('.cm-content')).toContainText(/width: \d+%/)
 })
