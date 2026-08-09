@@ -1,6 +1,6 @@
 # Full documentation
 
-This documentation describes Laravel Rich Text Editor `0.1.x`. The documentation stored in each Git tag is authoritative for that release.
+This documentation describes Laravel Rich Text Editor `1.x`. The documentation stored in each Git tag is authoritative for that release.
 
 ## Start here
 

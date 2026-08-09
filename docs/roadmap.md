@@ -1,9 +1,8 @@
 # Roadmap
 
-The following items are intentionally outside `0.1.x`:
+The following items are candidates for releases after `1.0`:
 
 - visual-editor dark theme with `light`, `dark`, and `auto` modes;
-- responsive image drag-resize;
 - tables;
 - additional interface translations;
 - an npm package with ESM modules;

@@ -15,3 +15,20 @@ Font families are deliberately unsupported. To enable text sizes, map stable nam
 ```
 
 Saved HTML uses `data-rte-size` rather than arbitrary inline styles, allowing the sanitizer to enforce the list exactly.
+
+Configure responsive image widths inside each profile:
+
+```php
+'images' => [
+    'schemes' => ['http', 'https'],
+    'alignments' => ['left', 'center', 'right'],
+    'resize' => [
+        'enabled' => true,
+        'min' => 20,
+        'max' => 100,
+        'step' => 5,
+    ],
+],
+```
+
+The range is expressed as percentages. Valid widths must align with the configured step starting at `min`. Set `enabled` to `false` to hide resize controls and remove persisted widths during sanitization.
