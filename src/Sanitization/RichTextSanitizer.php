@@ -134,6 +134,7 @@ class RichTextSanitizer
         }
         if ($settings['tables']['enabled'] ?? false) {
             $this->normalizeTableCells($xpath, $settings);
+            $this->normalizeTableStructure($xpath);
         }
 
         $output = '';
@@ -196,6 +197,31 @@ class RichTextSanitizer
                 $this->setCanonicalEnum($node, 'scope', $node->getAttribute('scope'), $tables['scopes'] ?? []);
             } else {
                 $node->removeAttribute('scope');
+            }
+        }
+    }
+
+    private function normalizeTableStructure(DOMXPath $xpath): void
+    {
+        foreach ($xpath->query('//table') ?: [] as $table) {
+            if (! $table instanceof DOMElement) {
+                continue;
+            }
+
+            $rows = [];
+            foreach (iterator_to_array($table->childNodes) as $child) {
+                if ($child instanceof DOMElement && strtolower($child->tagName) === 'tr') {
+                    $rows[] = $child;
+                }
+            }
+            if ($rows === []) {
+                continue;
+            }
+
+            $body = $table->ownerDocument->createElement('tbody');
+            $table->insertBefore($body, $rows[0]);
+            foreach ($rows as $row) {
+                $body->appendChild($row);
             }
         }
     }
