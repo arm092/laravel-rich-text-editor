@@ -46,6 +46,9 @@ protected function casts(): array
 }
 ```
 
+Laravel 10 applications should place the same entry in the model's protected
+`$casts` property.
+
 Render saved content through the defensive renderer:
 
 ```blade

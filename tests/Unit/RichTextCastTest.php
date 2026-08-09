@@ -12,11 +12,7 @@ class RichTextCastTest extends TestCase
     {
         $model = new class extends Model {
             protected $guarded = [];
-
-            protected function casts(): array
-            {
-                return ['content' => RichTextCast::class.':standard'];
-            }
+            protected $casts = ['content' => RichTextCast::class.':standard'];
         };
 
         $model->content = '<p onclick="bad()">Hello <strong>world</strong></p>';
@@ -29,7 +25,7 @@ class RichTextCastTest extends TestCase
     {
         $model = new class extends Model {
             protected $guarded = [];
-            protected function casts(): array { return ['content' => RichTextCast::class]; }
+            protected $casts = ['content' => RichTextCast::class];
         };
 
         $model->content = null;
