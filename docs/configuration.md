@@ -1,6 +1,6 @@
 # Configuration and profiles
 
-The published config controls asset loading, palette, code view, and named profiles. A profile is a security boundary, not only a toolbar preset: its headings, links, images, sizes, client diagnostics, and PHP sanitizer rules must remain aligned.
+The published config controls asset loading, palette, code view, and named profiles. A profile is a security boundary, not only a toolbar preset: its headings, links, images, tables, sizes, client diagnostics, and PHP sanitizer rules must remain aligned.
 
 Select a profile globally with `default_profile` or per component with `profile="minimal"`. Create a new profile by copying the complete structure of an existing one. Toolbar separators use `|`; unknown commands are ignored.
 
@@ -32,3 +32,18 @@ Configure responsive image widths inside each profile:
 ```
 
 The range is expressed as percentages. Valid widths must align with the configured step starting at `min`. Set `enabled` to `false` to hide resize controls and remove persisted widths during sanitization.
+
+Configure tables inside each profile:
+
+```php
+'tables' => [
+    'enabled' => true,
+    'horizontal_alignments' => ['left', 'center', 'right'],
+    'vertical_alignments' => ['top', 'middle', 'bottom'],
+    'scopes' => ['row', 'col', 'rowgroup', 'colgroup'],
+    'max_span' => 100,
+    'palette' => ['primary', 'success', 'error', 'info', 'graphite', 'ink', 'paper', 'white'],
+],
+```
+
+The `minimal` profile disables tables. Custom profiles may restrict the alignment, scope, span, and palette allowlists further.

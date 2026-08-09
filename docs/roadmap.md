@@ -1,9 +1,8 @@
 # Roadmap
 
-The following items are candidates for releases after `1.0`:
+The following items are candidates for releases after `1.1`:
 
 - visual-editor dark theme with `light`, `dark`, and `auto` modes;
-- tables;
 - additional interface translations;
 - an npm package with ESM modules;
 - a documented extension registry.

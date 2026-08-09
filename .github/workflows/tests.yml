@@ -65,5 +65,8 @@ jobs:
             README.md
             docs/**/*.md
             *.md
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --exclude-mail README.md CHANGELOG.md docs/**/*.md
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:browser

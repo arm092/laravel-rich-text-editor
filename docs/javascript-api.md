@@ -14,4 +14,4 @@ Instance methods:
 - `setReadOnly(boolean)` updates editability;
 - `destroy()` releases editor resources.
 
-Root elements dispatch bubbling custom events: `rte:ready`, `rte:change`, `rte:mode-change`, `rte:validation-error`, and `rte:destroy`. Internal Tiptap and enhanced-code-view objects are intentionally not exposed.
+Root elements dispatch bubbling custom events: `rte:ready`, `rte:change`, `rte:mode-change`, `rte:validation-error`, and `rte:destroy`. Internal visual-editor and Enhanced code-view objects are intentionally not exposed.

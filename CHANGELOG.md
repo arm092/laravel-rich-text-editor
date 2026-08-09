@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-09
+
+### Added
+
+- Responsive tables with header cells, row and column operations, merge and split, keyboard navigation, cell alignment, and allowlisted palette colors.
+- Symmetric browser and server canonicalization for legacy table HTML, safe spans, scope values, alignments, and palette tokens.
+
+### Changed
+
+- The `standard` profile enables tables by default; `minimal` continues to remove them.
+- Published assets, configuration, security guidance, formatting documentation, and browser coverage now include responsive tables.
+
 ## [1.0.0] - 2026-08-09
 
 ### Added
@@ -30,7 +42,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v0.1.1...v1.0.0
 [0.1.1]: https://github.com/arm092/laravel-rich-text-editor/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/arm092/laravel-rich-text-editor/releases/tag/v0.1.0
