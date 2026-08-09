@@ -1,5 +1,9 @@
-import { Editor, Extension, type NodeViewRendererProps } from '@tiptap/core'
+import { Editor, Extension, type Extensions, type NodeViewRendererProps } from '@tiptap/core'
 import Image from '@tiptap/extension-image'
+import { Table } from '@tiptap/extension-table/table'
+import { TableCell } from '@tiptap/extension-table/cell'
+import { TableHeader } from '@tiptap/extension-table/header'
+import { TableRow } from '@tiptap/extension-table/row'
 import { TextStyle } from '@tiptap/extension-text-style'
 import StarterKit from '@tiptap/starter-kit'
 import { normalizeEmpty, sanitizeHtml } from './sanitize'
@@ -137,7 +141,63 @@ const BUTTONS: Record<string, { label: string; icon: string }> = {
   codeBlock: { label: 'Code block', icon: '{ }' }, horizontalRule: { label: 'Horizontal rule', icon: '―' },
   link: { label: 'Add link', icon: '🔗' }, image: { label: 'Add image', icon: '▧' },
   clearFormatting: { label: 'Clear formatting', icon: 'Tx' }, codeView: { label: 'HTML code view', icon: '&lt;⁄&gt;' },
+  table: { label: 'Table', icon: '▦' },
 }
+
+function tableCellAttributes(includeScope = false) {
+  return {
+    colspan: {
+      default: 1,
+      parseHTML: (element: HTMLElement) => Number(element.getAttribute('colspan')) || 1,
+      renderHTML: (attributes: Record<string, unknown>) => Number(attributes.colspan) > 1 ? { colspan: attributes.colspan } : {},
+    },
+    rowspan: {
+      default: 1,
+      parseHTML: (element: HTMLElement) => Number(element.getAttribute('rowspan')) || 1,
+      renderHTML: (attributes: Record<string, unknown>) => Number(attributes.rowspan) > 1 ? { rowspan: attributes.rowspan } : {},
+    },
+    colwidth: { default: null, parseHTML: () => null, renderHTML: () => ({}) },
+    horizontalAlign: {
+      default: null,
+      parseHTML: (element: HTMLElement) => element.getAttribute('data-rte-horizontal-align'),
+      renderHTML: (attributes: Record<string, unknown>) => attributes.horizontalAlign ? { 'data-rte-horizontal-align': attributes.horizontalAlign } : {},
+    },
+    verticalAlign: {
+      default: null,
+      parseHTML: (element: HTMLElement) => element.getAttribute('data-rte-vertical-align'),
+      renderHTML: (attributes: Record<string, unknown>) => attributes.verticalAlign ? { 'data-rte-vertical-align': attributes.verticalAlign } : {},
+    },
+    textColor: {
+      default: null,
+      parseHTML: (element: HTMLElement) => element.getAttribute('data-rte-text-color'),
+      renderHTML: (attributes: Record<string, unknown>) => attributes.textColor ? { 'data-rte-text-color': attributes.textColor } : {},
+    },
+    backgroundColor: {
+      default: null,
+      parseHTML: (element: HTMLElement) => element.getAttribute('data-rte-background-color'),
+      renderHTML: (attributes: Record<string, unknown>) => attributes.backgroundColor ? { 'data-rte-background-color': attributes.backgroundColor } : {},
+    },
+    ...(includeScope ? {
+      scope: {
+        default: 'col',
+        parseHTML: (element: HTMLElement) => element.getAttribute('scope') || 'col',
+        renderHTML: (attributes: Record<string, unknown>) => attributes.scope ? { scope: attributes.scope } : {},
+      },
+    } : {}),
+  }
+}
+
+const RestrictedTable = Table.extend({
+  renderHTML() { return ['table', ['tbody', 0]] },
+})
+
+const RestrictedTableCell = TableCell.extend({
+  addAttributes() { return { ...this.parent?.(), ...tableCellAttributes() } },
+})
+
+const RestrictedTableHeader = TableHeader.extend({
+  addAttributes() { return { ...this.parent?.(), ...tableCellAttributes(true) } },
+})
 
 export class RichTextEditorController implements PublicEditor {
   private readonly input: HTMLTextAreaElement
@@ -155,6 +215,9 @@ export class RichTextEditorController implements PublicEditor {
   private readonly form: HTMLFormElement | null
   private readonly onSubmit = (event: SubmitEvent) => this.handleSubmit(event)
   private readonly onExternalSync = () => this.syncFromInput()
+  private readonly onRootKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') this.closeTableMenu()
+  }
 
   constructor(private readonly root: HTMLElement, private readonly codeViewFactory: CodeViewFactory, options: EditorOptions = {}) {
     this.options = { ...this.readOptions(), ...options, codeView: { ...this.readOptions().codeView, ...options.codeView } }
@@ -191,6 +254,7 @@ export class RichTextEditorController implements PublicEditor {
       },
       onUpdate: ({ editor }) => this.syncInput(normalizeEmpty(editor.getHTML())),
       onSelectionUpdate: () => this.refreshToolbar(),
+      onTransaction: () => this.refreshTableMenu(),
       onCreate: ({ editor }) => {
         this.syncInput(normalizeEmpty(editor.getHTML()), false)
         this.emit('rte:ready', { editor: this })
@@ -201,6 +265,7 @@ export class RichTextEditorController implements PublicEditor {
     this.form?.addEventListener('submit', this.onSubmit)
     this.input.addEventListener('change', this.onExternalSync)
     this.root.addEventListener('rte:sync', this.onExternalSync)
+    this.root.addEventListener('keydown', this.onRootKeydown, true)
     document.addEventListener('livewire:navigated', this.onExternalSync)
   }
 
@@ -227,6 +292,7 @@ export class RichTextEditorController implements PublicEditor {
     this.form?.removeEventListener('submit', this.onSubmit)
     this.input.removeEventListener('change', this.onExternalSync)
     this.root.removeEventListener('rte:sync', this.onExternalSync)
+    this.root.removeEventListener('keydown', this.onRootKeydown, true)
     document.removeEventListener('livewire:navigated', this.onExternalSync)
     this.codeView?.destroy()
     this.editor.destroy()
@@ -253,7 +319,7 @@ export class RichTextEditorController implements PublicEditor {
   }
 
   private extensions() {
-    return [
+    const extensions: Extensions = [
       StarterKit.configure({
         heading: { levels: (this.options.headings ?? [2, 3, 4]) as any },
         link: { openOnClick: false, defaultProtocol: 'https', HTMLAttributes: { rel: 'noopener noreferrer' } },
@@ -262,6 +328,11 @@ export class RichTextEditorController implements PublicEditor {
       TextStyle,
       RestrictedTextSize,
     ]
+    if (this.options.tables?.enabled) {
+      extensions.push(RestrictedTable.configure({ resizable: false }), TableRow, RestrictedTableHeader, RestrictedTableCell)
+    }
+
+    return extensions
   }
 
   private renderToolbar(): void {
@@ -285,6 +356,10 @@ export class RichTextEditorController implements PublicEditor {
         continue
       }
       if (tool === 'codeView' && this.options.codeView?.enabled === false) continue
+      if (tool === 'table') {
+        if (this.options.tables?.enabled) this.toolbar.append(this.createTableControl())
+        continue
+      }
       const definition = BUTTONS[tool]
       if (!definition) continue
       const button = document.createElement('button')
@@ -409,6 +484,123 @@ export class RichTextEditorController implements PublicEditor {
     this.sourceHost.prepend(actions)
   }
 
+  private createTableControl(): HTMLElement {
+    const control = this.createElement('div', 'rte-table-control')
+    const toggle = document.createElement('button')
+    toggle.type = 'button'
+    toggle.className = 'rte-button'
+    toggle.dataset.rteCommand = 'table'
+    toggle.setAttribute('aria-label', 'Table')
+    toggle.setAttribute('aria-expanded', 'false')
+    toggle.innerHTML = BUTTONS.table.icon
+    const menu = this.createElement('div', 'rte-table-menu')
+    menu.hidden = true
+    menu.setAttribute('aria-label', 'Table tools')
+
+    const actions: Array<[string, string]> = [
+      ['insert', 'Insert 3 × 3 table'],
+      ['row-before', 'Add row before'], ['row-after', 'Add row after'], ['row-delete', 'Delete row'],
+      ['column-before', 'Add column before'], ['column-after', 'Add column after'], ['column-delete', 'Delete column'],
+      ['header-row', 'Toggle header row'], ['merge', 'Merge cells'], ['split', 'Split cell'], ['delete', 'Delete table'],
+    ]
+    for (const [action, label] of actions) {
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = `rte-table-action${action === 'delete' ? ' rte-table-action--danger' : ''}`
+      button.dataset.rteTableAction = action
+      button.textContent = label
+      button.addEventListener('click', () => this.runTableAction(action))
+      menu.append(button)
+    }
+
+    menu.append(
+      this.createTableSelect('Horizontal alignment', 'horizontalAlign', ['', ...(this.options.tables?.horizontal_alignments ?? [])]),
+      this.createTableSelect('Vertical alignment', 'verticalAlign', ['', ...(this.options.tables?.vertical_alignments ?? [])]),
+      this.createTableSelect('Text color', 'textColor', ['', ...(this.options.tables?.palette ?? [])]),
+      this.createTableSelect('Background color', 'backgroundColor', ['', ...(this.options.tables?.palette ?? [])]),
+    )
+    toggle.addEventListener('click', () => {
+      menu.hidden = !menu.hidden
+      toggle.setAttribute('aria-expanded', String(!menu.hidden))
+      if (!menu.hidden) {
+        this.refreshTableMenu()
+        menu.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus()
+      }
+    })
+    toggle.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowDown') return
+      event.preventDefault()
+      menu.hidden = false
+      toggle.setAttribute('aria-expanded', 'true')
+      this.refreshTableMenu()
+      menu.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus()
+    })
+    control.append(toggle, menu)
+    return control
+  }
+
+  private createTableSelect(label: string, attribute: string, values: string[]): HTMLElement {
+    const field = document.createElement('label')
+    field.className = 'rte-table-field'
+    field.append(document.createTextNode(label))
+    const select = document.createElement('select')
+    select.dataset.rteCellAttribute = attribute
+    select.setAttribute('aria-label', label)
+    select.append(...values.map((value) => new Option(value ? value[0].toUpperCase() + value.slice(1) : 'Reset', value)))
+    select.addEventListener('change', () => {
+      this.editor.commands.setCellAttribute(attribute, select.value || null)
+      this.refreshTableMenu()
+    })
+    field.append(select)
+    return field
+  }
+
+  private runTableAction(action: string): void {
+    if (action === 'insert') {
+      this.editor.commands.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+      this.closeTableMenu()
+    }
+    else if (action === 'row-before') this.editor.commands.addRowBefore()
+    else if (action === 'row-after') this.editor.commands.addRowAfter()
+    else if (action === 'row-delete') this.editor.commands.deleteRow()
+    else if (action === 'column-before') this.editor.commands.addColumnBefore()
+    else if (action === 'column-after') this.editor.commands.addColumnAfter()
+    else if (action === 'column-delete') this.editor.commands.deleteColumn()
+    else if (action === 'header-row') this.editor.commands.toggleHeaderRow()
+    else if (action === 'merge') this.editor.commands.mergeCells()
+    else if (action === 'split') this.editor.commands.splitCell()
+    else if (action === 'delete') this.editor.commands.deleteTable()
+    this.refreshTableMenu()
+    this.closeTableMenu()
+  }
+
+  private refreshTableMenu(): void {
+    if (!(this as any).editor) return
+    const menu = this.toolbar.querySelector<HTMLElement>('.rte-table-menu')
+    if (!menu) return
+    const inTable = this.editor.isActive('table')
+    menu.querySelectorAll<HTMLButtonElement>('[data-rte-table-action]').forEach((button) => {
+      const action = button.dataset.rteTableAction
+      if (action === 'insert') button.disabled = inTable
+      else if (!inTable) button.disabled = true
+      else if (action === 'merge') button.disabled = !this.editor.can().mergeCells()
+      else if (action === 'split') button.disabled = !this.editor.can().splitCell()
+      else button.disabled = false
+    })
+    const attributes = this.editor.getAttributes(this.editor.isActive('tableHeader') ? 'tableHeader' : 'tableCell')
+    menu.querySelectorAll<HTMLSelectElement>('[data-rte-cell-attribute]').forEach((select) => {
+      select.disabled = !inTable
+      select.value = String(attributes[select.dataset.rteCellAttribute!] ?? '')
+    })
+  }
+
+  private closeTableMenu(): void {
+    const menu = this.toolbar?.querySelector<HTMLElement>('.rte-table-menu')
+    const toggle = this.toolbar?.querySelector<HTMLButtonElement>('[data-rte-command="table"]')
+    if (menu) menu.hidden = true
+    toggle?.setAttribute('aria-expanded', 'false')
+  }
+
   private openLinkDialog(): void {
     const previous = this.editor.getAttributes('link').href as string | undefined
     this.openDialog('Add link', [
@@ -466,6 +658,7 @@ export class RichTextEditorController implements PublicEditor {
       strike: this.editor.isActive('strike'), code: this.editor.isActive('code'), bulletList: this.editor.isActive('bulletList'),
       orderedList: this.editor.isActive('orderedList'), blockquote: this.editor.isActive('blockquote'), codeBlock: this.editor.isActive('codeBlock'),
       link: this.editor.isActive('link'), codeView: this.inCodeView,
+      table: this.editor.isActive('table'),
     }
     this.toolbar.querySelectorAll<HTMLButtonElement>('[data-rte-command]').forEach((button) => {
       const isActive = active[button.dataset.rteCommand!] ?? false

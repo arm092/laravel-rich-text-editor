@@ -41,6 +41,7 @@ class RichTextEditor extends Component
             'fontSizes' => $profileSettings['font_sizes'] ?? [],
             'links' => $profileSettings['links'] ?? [],
             'images' => $profileSettings['images'] ?? [],
+            'tables' => $profileSettings['tables'] ?? ['enabled' => false],
             'codeView' => config('rich-text-editor.code_view', []),
             'theme' => config('rich-text-editor.theme', []),
         ];

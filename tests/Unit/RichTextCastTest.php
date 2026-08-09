@@ -45,4 +45,17 @@ class RichTextCastTest extends TestCase
         $this->assertSame('<p>Русский Հայերեն</p>', $model->getAttributes()['content']);
         $this->assertSame('<p>Русский Հայերեն</p>', $model->content);
     }
+
+    public function test_it_preserves_canonical_tables(): void
+    {
+        $model = new class extends Model {
+            protected $guarded = [];
+            protected $casts = ['content' => RichTextCast::class.':standard'];
+        };
+        $html = '<table><tbody><tr><th scope="col"><p>Header</p></th></tr><tr><td><p>Value</p></td></tr></tbody></table>';
+
+        $model->content = $html;
+
+        $this->assertSame($html, $model->getAttributes()['content']);
+    }
 }

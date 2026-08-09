@@ -78,6 +78,30 @@ class RichTextSanitizerTest extends TestCase
         );
     }
 
+    public function test_it_preserves_canonical_table_structure_and_cell_attributes(): void
+    {
+        $html = '<table><tbody><tr><th scope="col" data-rte-horizontal-align="center" data-rte-text-color="error"><p>Русский</p></th><th scope="col"><p>Հայերեն</p></th></tr><tr><td colspan="2" rowspan="2" data-rte-vertical-align="middle" data-rte-background-color="paper"><p>Value</p></td></tr></tbody></table>';
+
+        $this->assertSame($html, app(RichTextSanitizer::class)->sanitize($html, 'standard'));
+    }
+
+    public function test_it_canonicalizes_legacy_table_attributes_and_palette_hex_colors(): void
+    {
+        $html = '<table border="1" cellpadding="4" cellspacing="2" class="legacy" style="width:100%"><tr><th align="RIGHT" valign="TOP" bgcolor="#f8f8f2" style="color:#F92672; width: 200px" nowrap scope="COL"><p>Header</p></th></tr></table>';
+        $sanitized = app(RichTextSanitizer::class)->sanitize($html, 'standard');
+
+        $this->assertSame('<table><tbody><tr><th scope="col" data-rte-horizontal-align="right" data-rte-vertical-align="top" data-rte-text-color="error" data-rte-background-color="paper"><p>Header</p></th></tr></tbody></table>', $sanitized);
+    }
+
+    public function test_it_removes_invalid_table_values_and_tables_from_minimal_profile(): void
+    {
+        $html = '<table><tbody><tr><td colspan="101" rowspan="0" class="bad" width="20" height="20" data-rte-horizontal-align="wide" data-rte-text-color="magenta"><p>Cell</p></td></tr></tbody></table>';
+        $sanitizer = app(RichTextSanitizer::class);
+
+        $this->assertSame('<table><tbody><tr><td><p>Cell</p></td></tr></tbody></table>', $sanitizer->sanitize($html, 'standard'));
+        $this->assertSame('', $sanitizer->sanitize($html, 'minimal'));
+    }
+
     public function test_it_normalizes_empty_content_and_preserves_null(): void
     {
         $sanitizer = app(RichTextSanitizer::class);
@@ -85,6 +109,7 @@ class RichTextSanitizerTest extends TestCase
         $this->assertSame('', $sanitizer->sanitize('<p><br></p>'));
         $this->assertNull($sanitizer->sanitize(null));
         $this->assertNotSame('', $sanitizer->sanitize('<hr>'));
+        $this->assertSame('<table><tbody><tr><td><p></p></td></tr></tbody></table>', $sanitizer->sanitize('<table><tbody><tr><td><p></p></td></tr></tbody></table>'));
     }
 
     public function test_it_rejects_unknown_profiles(): void

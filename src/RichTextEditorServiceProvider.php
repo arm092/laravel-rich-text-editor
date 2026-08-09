@@ -17,6 +17,7 @@ class RichTextEditorServiceProvider extends ServiceProvider
         $this->app->singleton(RichTextSanitizer::class, fn ($app) => new RichTextSanitizer(
             $app['config']->get('rich-text-editor.profiles', []),
             $app['config']->get('rich-text-editor.default_profile', 'standard'),
+            $app['config']->get('rich-text-editor.theme', []),
         ));
     }
 

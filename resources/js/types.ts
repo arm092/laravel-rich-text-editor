@@ -25,6 +25,14 @@ export type EditorOptions = {
     alignments?: string[]
     resize?: { enabled?: boolean; min?: number; max?: number; step?: number }
   }
+  tables?: {
+    enabled?: boolean
+    horizontal_alignments?: string[]
+    vertical_alignments?: string[]
+    scopes?: string[]
+    max_span?: number
+    palette?: string[]
+  }
   codeView?: CodeViewOptions
   theme?: Record<string, string>
 }

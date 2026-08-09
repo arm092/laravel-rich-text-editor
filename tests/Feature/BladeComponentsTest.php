@@ -47,6 +47,16 @@ class BladeComponentsTest extends TestCase
         $this->assertStringContainsString('style="width: 60%;"', $view);
     }
 
+    public function test_content_component_renders_responsive_canonical_tables(): void
+    {
+        $view = Blade::render('<x-rich-text-content :content="$content" profile="standard" />', [
+            'content' => '<table><tbody><tr><th scope="col"><p>Русский Հայերեն</p></th></tr></tbody></table>',
+        ]);
+
+        $this->assertStringContainsString('<table><tbody><tr><th scope="col"><p>Русский Հայերեն</p></th></tr></tbody></table>', $view);
+        $this->assertStringContainsString('class="rte-content"', $view);
+    }
+
     public function test_custom_colors_and_code_view_options_are_serialized(): void
     {
         config()->set('rich-text-editor.theme.primary', '#123456');
@@ -55,5 +65,6 @@ class BladeComponentsTest extends TestCase
 
         $this->assertStringContainsString('#123456', $view);
         $this->assertStringContainsString('"enabled":false', $view);
+        $this->assertStringContainsString('"tables":{"enabled":true', $view);
     }
 }
