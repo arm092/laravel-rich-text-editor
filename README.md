@@ -97,7 +97,16 @@ Both files expose the same API: `create`, `scan`, `destroy`, `getHTML`, `setHTML
 | `profiles.*.headings` | `[2, 3, 4]` | Restricts heading levels. |
 | `profiles.*.font_sizes` | `[]` | Enables only named, allowlisted text sizes. |
 
-The default palette is configurable through CSS variables and `config/rich-text-editor.php`: Primary `#FD971F`, Success `#A6E22E`, Error `#F92672`, Info `#66D9EF`, Graphite `#272822`, Ink `#060606`, Paper `#F8F8F2`, and White `#FFFFFF`.
+## Roadmap
+
+- Visual-editor dark theme with `light`, `dark`, and `auto` modes
+- Responsive image drag-resize
+- Tables
+- Additional interface translations
+- npm publishing with ESM modules
+- A documented extension registry
+
+See the [full roadmap](docs/roadmap.md) for scope notes and exclusions.
 
 ## Documentation
 
@@ -109,7 +118,6 @@ The default palette is configurable through CSS variables and `config/rich-text-
 - [Security, casting, and rendering](docs/security.md)
 - [JavaScript API and events](docs/javascript-api.md)
 - [Troubleshooting](docs/troubleshooting.md)
-- [Roadmap](docs/roadmap.md)
 
 ## License
 
