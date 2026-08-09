@@ -15,6 +15,13 @@ class RichTextSanitizerTest extends TestCase
         $this->assertSame($html, app(RichTextSanitizer::class)->sanitize($html));
     }
 
+    public function test_it_preserves_cyrillic_and_armenian_text_inside_html(): void
+    {
+        $html = '<p>Русский Հայերեն</p>';
+
+        $this->assertSame($html, app(RichTextSanitizer::class)->sanitize($html, 'standard'));
+    }
+
     public function test_it_removes_scripts_events_and_unsafe_urls(): void
     {
         $html = '<script>alert(1)</script><p onclick="alert(1)">Safe</p><a href="javascript:alert(1)" target="_blank">Link</a>';

@@ -32,4 +32,17 @@ class RichTextCastTest extends TestCase
 
         $this->assertNull($model->getAttributes()['content']);
     }
+
+    public function test_it_preserves_cyrillic_and_armenian_text(): void
+    {
+        $model = new class extends Model {
+            protected $guarded = [];
+            protected $casts = ['content' => RichTextCast::class.':standard'];
+        };
+
+        $model->content = '<p>Русский Հայերեն</p>';
+
+        $this->assertSame('<p>Русский Հայերեն</p>', $model->getAttributes()['content']);
+        $this->assertSame('<p>Русский Հայերեն</p>', $model->content);
+    }
 }

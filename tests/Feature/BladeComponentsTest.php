@@ -29,6 +29,15 @@ class BladeComponentsTest extends TestCase
         $this->assertStringNotContainsString('<script>', $view);
     }
 
+    public function test_content_component_preserves_cyrillic_and_armenian_text(): void
+    {
+        $view = Blade::render('<x-rich-text-content :content="$content" />', [
+            'content' => '<p>Русский Հայերեն</p>',
+        ]);
+
+        $this->assertStringContainsString('<p>Русский Հայերեն</p>', $view);
+    }
+
     public function test_custom_colors_and_code_view_options_are_serialized(): void
     {
         config()->set('rich-text-editor.theme.primary', '#123456');

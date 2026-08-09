@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-09
+
+### Fixed
+
+- Preserve UTF-8 text, including Cyrillic and Armenian, during server-side HTML normalization, Eloquent casting, and Blade rendering.
+
 ## [0.1.0] - 2026-08-09
 
 ### Added
@@ -14,5 +20,6 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/arm092/laravel-rich-text-editor/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/arm092/laravel-rich-text-editor/releases/tag/v0.1.0

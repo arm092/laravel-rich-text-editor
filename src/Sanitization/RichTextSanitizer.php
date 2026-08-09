@@ -71,7 +71,8 @@ class RichTextSanitizer
 
         $document = new DOMDocument('1.0', 'UTF-8');
         $previous = libxml_use_internal_errors(true);
-        $document->loadHTML('<div data-rte-root>'.$html.'</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        // DOMDocument otherwise treats HTML fragments without metadata as ISO-8859-1.
+        $document->loadHTML('<?xml encoding="UTF-8"><div data-rte-root>'.$html.'</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         libxml_clear_errors();
         libxml_use_internal_errors($previous);
 
