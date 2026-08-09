@@ -27,7 +27,12 @@ class RichTextEditor extends Component
         public ?string $error = null,
         ?string $id = null,
     ) {
-        $this->profile ??= config('rich-text-editor.default_profile', 'standard');
+        if ($this->profile === null || trim($this->profile) === '') {
+            $configuredDefault = config('rich-text-editor.default_profile');
+            $this->profile = is_string($configuredDefault) && trim($configuredDefault) !== ''
+                ? $configuredDefault
+                : 'standard';
+        }
         $this->editorId = $id ?: 'rte-'.str()->uuid();
         $profileSettings = $sanitizer->profile($this->profile);
         $this->editorOptions = [

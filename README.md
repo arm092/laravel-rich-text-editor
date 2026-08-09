@@ -29,7 +29,6 @@ The publish command copies the configuration and prebuilt assets. Use `--force` 
     name="content"
     :value="old('content', $post->content)"
     label="Content"
-    profile="standard"
 />
 ```
 
@@ -41,7 +40,7 @@ use Arm092\RichTextEditor\Casts\RichTextCast;
 protected function casts(): array
 {
     return [
-        'content' => RichTextCast::class . ':standard',
+        'content' => RichTextCast::class,
     ];
 }
 ```
@@ -52,7 +51,7 @@ Laravel 10 applications should place the same entry in the model's protected
 Render saved content through the defensive renderer:
 
 ```blade
-<x-rich-text-content :content="$post->content" profile="standard" />
+<x-rich-text-content :content="$post->content" />
 ```
 
 ## Livewire

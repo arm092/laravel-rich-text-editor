@@ -3,7 +3,7 @@
 `RichTextCast` preserves a string model attribute while sanitizing values on assignment:
 
 ```php
-'content' => RichTextCast::class . ':standard',
+'content' => RichTextCast::class,
 ```
 
 Place this entry in the model's `casts()` method on Laravel 11 and newer. On

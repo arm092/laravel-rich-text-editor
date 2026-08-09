@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-08-09
+
+### Fixed
+
+- Preserve the editor border radius and sizing inside narrow flex and grid layouts while keeping table dropdowns unclipped.
+- Fall back to the `standard` profile when the component profile and configured default are missing or empty.
+
 ## [1.1.0] - 2026-08-09
 
 ### Added
@@ -42,7 +49,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v0.1.1...v1.0.0
 [0.1.1]: https://github.com/arm092/laravel-rich-text-editor/compare/v0.1.0...v0.1.1

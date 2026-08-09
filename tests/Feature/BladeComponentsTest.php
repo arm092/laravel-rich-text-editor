@@ -67,4 +67,18 @@ class BladeComponentsTest extends TestCase
         $this->assertStringContainsString('"enabled":false', $view);
         $this->assertStringContainsString('"tables":{"enabled":true', $view);
     }
+
+    public function test_missing_or_empty_profile_falls_back_to_standard(): void
+    {
+        config()->set('rich-text-editor.default_profile', null);
+
+        $view = Blade::render('<x-rich-text-editor name="content" profile="" />');
+        $content = Blade::render('<x-rich-text-content :content="$content" />', [
+            'content' => '<table><tbody><tr><td><p>Cell</p></td></tr></tbody></table>',
+        ]);
+
+        $this->assertStringContainsString('"profile":"standard"', $view);
+        $this->assertStringContainsString('"tables":{"enabled":true', $view);
+        $this->assertStringContainsString('<table><tbody>', $content);
+    }
 }

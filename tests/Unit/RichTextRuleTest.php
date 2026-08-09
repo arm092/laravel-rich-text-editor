@@ -12,13 +12,13 @@ class RichTextRuleTest extends TestCase
     {
         $html = '<table><tbody><tr><th scope="col"><p>Header</p></th></tr><tr><td><p>Value</p></td></tr></tbody></table>';
 
-        $this->assertTrue(Validator::make(['content' => $html], ['content' => [new RichTextRule('standard')]])->passes());
+        $this->assertTrue(Validator::make(['content' => $html], ['content' => [new RichTextRule()]])->passes());
     }
 
     public function test_it_rejects_table_html_that_requires_destructive_sanitization(): void
     {
         $html = '<table border="1"><tr><td data-rte-text-color="unknown"><p>Value</p></td></tr></table>';
 
-        $this->assertFalse(Validator::make(['content' => $html], ['content' => [new RichTextRule('standard')]])->passes());
+        $this->assertFalse(Validator::make(['content' => $html], ['content' => [new RichTextRule()]])->passes());
     }
 }

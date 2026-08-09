@@ -14,11 +14,18 @@ class RichTextEditorServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/rich-text-editor.php', 'rich-text-editor');
-        $this->app->singleton(RichTextSanitizer::class, fn ($app) => new RichTextSanitizer(
-            $app['config']->get('rich-text-editor.profiles', []),
-            $app['config']->get('rich-text-editor.default_profile', 'standard'),
-            $app['config']->get('rich-text-editor.theme', []),
-        ));
+        $this->app->singleton(RichTextSanitizer::class, function ($app) {
+            $configuredDefault = $app['config']->get('rich-text-editor.default_profile');
+            $defaultProfile = is_string($configuredDefault) && trim($configuredDefault) !== ''
+                ? $configuredDefault
+                : 'standard';
+
+            return new RichTextSanitizer(
+                $app['config']->get('rich-text-editor.profiles', []),
+                $defaultProfile,
+                $app['config']->get('rich-text-editor.theme', []),
+            );
+        });
     }
 
     public function boot(): void
