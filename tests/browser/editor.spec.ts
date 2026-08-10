@@ -44,6 +44,24 @@ test('default editor has no serious accessibility violations', async ({ page }) 
   expect(results.violations.filter((item) => item.impact === 'serious' || item.impact === 'critical')).toEqual([])
 })
 
+test('list markers remain visible when the host resets list styles', async ({ page }) => {
+  await mount(page, enhanced)
+  await page.addStyleTag({ content: 'ul, ol { list-style: none; }' })
+  await page.evaluate(() => {
+    const root = document.querySelector<HTMLElement>('[data-rich-text-editor]')!
+    ;(window as any).RichTextEditor.create(root).setHTML('<ul><li><p>Bullet</p></li></ul><ol><li><p>Number</p></li></ol>')
+    const rendered = document.createElement('div')
+    rendered.className = 'rte-content'
+    rendered.innerHTML = '<ul><li>Rendered bullet</li></ul><ol><li>Rendered number</li></ol>'
+    document.body.append(rendered)
+  })
+
+  await expect(page.locator('.rte-prose ul')).toHaveCSS('list-style-type', 'disc')
+  await expect(page.locator('.rte-prose ol')).toHaveCSS('list-style-type', 'decimal')
+  await expect(page.locator('.rte-content ul')).toHaveCSS('list-style-type', 'disc')
+  await expect(page.locator('.rte-content ol')).toHaveCSS('list-style-type', 'decimal')
+})
+
 test('image resize handle persists a responsive width with keyboard controls', async ({ page }) => {
   await mount(page, enhanced)
   const handle = page.getByRole('slider', { name: 'Resize image' })
