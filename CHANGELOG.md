@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-08-12
+
+### Fixed
+
+- Allow `RichTextRule` to accept safe HTTP and mailto links when sanitization only adds the mandatory `rel="noopener noreferrer"` attribute, while continuing to reject destructive unsafe or unsupported changes.
+
 ## [1.1.2] - 2026-08-10
 
 ### Fixed
@@ -55,7 +61,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.0.0...v1.1.0

@@ -21,7 +21,7 @@ class RichTextRule implements ValidationRule
 
         $sanitizer = app(RichTextSanitizer::class);
         $sanitized = $sanitizer->sanitize($value, $this->profile);
-        if ($value !== null && trim($value) !== $sanitized) {
+        if ($value !== null && $this->withoutCanonicalLinkRel(trim($value)) !== $this->withoutCanonicalLinkRel((string) $sanitized)) {
             $fail('The :attribute contains unsupported or unsafe HTML.');
             return;
         }
@@ -31,5 +31,12 @@ class RichTextRule implements ValidationRule
         if ($limit !== null && $length > $limit) {
             $fail("The :attribute may not contain more than {$limit} characters.");
         }
+    }
+
+    private function withoutCanonicalLinkRel(string $html): string
+    {
+        return preg_replace_callback('/<a\b[^>]*>/i', static function (array $matches): string {
+            return preg_replace('/\s+rel\s*=\s*(?:"[^"]*"|\'[^\']*\')/i', '', $matches[0]) ?? $matches[0];
+        }, $html) ?? $html;
     }
 }
