@@ -9,6 +9,7 @@ use Illuminate\View\Component;
 class RichTextEditor extends Component
 {
     public readonly string $editorId;
+    public readonly string $assetSourcePath;
 
     /** @var array<string, mixed> */
     public readonly array $editorOptions;
@@ -34,6 +35,7 @@ class RichTextEditor extends Component
                 : 'standard';
         }
         $this->editorId = $id ?: 'rte-'.str()->uuid();
+        $this->assetSourcePath = dirname(__DIR__, 3).'/dist';
         $profileSettings = $sanitizer->profile($this->profile);
         $this->editorOptions = [
             'profile' => $this->profile,
@@ -54,6 +56,6 @@ class RichTextEditor extends Component
 
     public function render(): View
     {
-        return view('rich-text-editor::components.editor');
+        return view('rich-text-editor::components.editor', ['assetSourcePath' => $this->assetSourcePath]);
     }
 }

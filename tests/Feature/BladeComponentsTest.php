@@ -47,6 +47,7 @@ class BladeComponentsTest extends TestCase
         $component = new RichTextEditor(app(RichTextSanitizer::class), name: 'content');
         $view = $component->render()
             ->with($component->data())
+            ->with('assetSourcePath', $component->assetSourcePath)
             ->with('attributes', new ComponentAttributeBag())
             ->render();
 

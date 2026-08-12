@@ -11,9 +11,9 @@
 @if (config('rich-text-editor.assets.auto', true))
     @once
         @php
-            $versionedAsset = static function (string $file) use ($assetPath): string {
+            $versionedAsset = static function (string $file) use ($assetPath, $assetSourcePath): string {
                 $published = public_path($assetPath.'/'.$file);
-                $source = dirname(__DIR__, 3).'/dist/'.$file;
+                $source = $assetSourcePath.'/'.$file;
                 $assetFile = is_file($published) ? $published : $source;
                 $fingerprint = dechex(filemtime($assetFile)).dechex(filesize($assetFile));
 

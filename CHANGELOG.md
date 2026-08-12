@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.1.9] - 2026-08-13
+
+### Fixed
+
+- Resolve the package asset fallback outside compiled Blade view paths so cache-busted auto assets work before publishing and across the full Laravel matrix.
+
 ## [1.1.8] - 2026-08-13
 
 ### Fixed
@@ -91,7 +97,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.8...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.9...HEAD
+[1.1.9]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.8...v1.1.9
 [1.1.8]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.7...v1.1.8
 [1.1.7]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.6...v1.1.7
 [1.1.6]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.5...v1.1.6
