@@ -1,7 +1,7 @@
 {
   "name": "laravel-rich-text-editor-assets",
   "private": true,
-  "version": "1.1.5",
+  "version": "1.1.6",
   "type": "module",
   "scripts": {
     "build": "vite build --mode basic && vite build --mode with-code && tailwindcss -i resources/css/editor.css -o dist/rich-text-editor.css --minify",

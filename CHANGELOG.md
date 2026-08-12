@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.1.6] - 2026-08-13
+
+### Fixed
+
+- Synchronize dirty code view HTML during the submit capture phase so Livewire and other form listeners receive the current value on the first submission.
+
 ## [1.1.5] - 2026-08-12
 
 ### Fixed
@@ -73,7 +79,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.5...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.6...HEAD
+[1.1.6]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.5...v1.1.6
 [1.1.5]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.2...v1.1.3

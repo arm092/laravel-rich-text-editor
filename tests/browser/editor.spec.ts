@@ -8,7 +8,7 @@ const styles = resolve('dist/rich-text-editor.css')
 
 async function mount(page: Page, script: string) {
   await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Editor test</title></head><body>
-    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","|","bold","italic","link","image","table","|","codeView"],"headings":[2,3,4],"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
+    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","|","bold","italic","link","image","table","|","codeView"],"headings":[2,3,4],"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
       <label for="content">Content</label><textarea id="content" name="content" data-rte-input><h2>Hello</h2><p>Editor content</p><img src="https://example.com/image.jpg" alt="Example"></textarea><div data-rte-mount></div>
     </div></form></main></body></html>`)
   await page.addStyleTag({ path: styles })
@@ -21,6 +21,32 @@ test('basic bundle uses the textarea code view', async ({ page }) => {
   await page.getByRole('button', { name: 'HTML code view' }).click()
   await expect(page.locator('.rte-code-textarea')).toBeVisible()
   await expect(page.locator('.cm-editor')).toHaveCount(0)
+})
+
+test('first submit synchronizes safe pasted HTML from visual and code views', async ({ page }) => {
+  await mount(page, basic)
+  const html = '<h2>Գաղտնիության քաղաքականություն</h2><p>Կապ՝ <a href="mailto:support@apricode.am">support@apricode.am</a></p>'
+  await page.evaluate((content) => {
+    const root = document.querySelector<HTMLElement>('[data-rich-text-editor]')!
+    ;(window as any).RichTextEditor.create(root).setHTML(content)
+  }, html)
+  await expect(page.locator('[data-rte-input]')).toHaveValue(html)
+
+  await page.getByRole('button', { name: 'HTML code view' }).click()
+  const source = page.locator('.rte-code-textarea')
+  await source.fill(html)
+  await page.evaluate(() => {
+    const form = document.querySelector('form')!
+    ;(window as any).__submittedHtml = null
+    form.addEventListener('submit', (event) => {
+      event.preventDefault()
+      ;(window as any).__submittedHtml = new FormData(form).get('content')
+    }, { once: true })
+    form.requestSubmit()
+  })
+
+  await expect.poll(() => page.evaluate(() => (window as any).__submittedHtml)).toBe(html)
+  await expect(page.locator('[data-rte-input]')).toHaveValue(html)
 })
 
 test('enhanced bundle provides a Monokai code editor and safe apply flow', async ({ page }) => {

@@ -262,7 +262,7 @@ export class RichTextEditorController implements PublicEditor {
     })
 
     this.form = this.input.closest('form')
-    this.form?.addEventListener('submit', this.onSubmit)
+    this.form?.addEventListener('submit', this.onSubmit, true)
     this.input.addEventListener('change', this.onExternalSync)
     this.root.addEventListener('rte:sync', this.onExternalSync)
     this.root.addEventListener('keydown', this.onRootKeydown, true)
@@ -289,7 +289,7 @@ export class RichTextEditorController implements PublicEditor {
   }
 
   destroy(): void {
-    this.form?.removeEventListener('submit', this.onSubmit)
+    this.form?.removeEventListener('submit', this.onSubmit, true)
     this.input.removeEventListener('change', this.onExternalSync)
     this.root.removeEventListener('rte:sync', this.onExternalSync)
     this.root.removeEventListener('keydown', this.onRootKeydown, true)

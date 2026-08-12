@@ -3,14 +3,16 @@ import { createBasicCodeView } from '../../resources/js/basic-code-view'
 import { createEditor } from '../../resources/js/editor'
 
 function fixture() {
+  const form = document.createElement('form')
   const root = document.createElement('div')
   root.dataset.richTextEditor = ''
   root.dataset.rteOptions = JSON.stringify({
     toolbar: ['bold', 'codeView'], headings: [2, 3, 4], codeView: { enabled: true },
-    links: { schemes: ['http', 'https'], allow_relative: true }, images: { schemes: ['http', 'https'], alignments: ['center'] },
+    links: { schemes: ['http', 'https', 'mailto'], allow_relative: true }, images: { schemes: ['http', 'https'], alignments: ['center'] },
   })
   root.innerHTML = '<textarea data-rte-input><p>Hello</p></textarea><div data-rte-mount></div>'
-  document.body.append(root)
+  form.append(root)
+  document.body.append(form)
   return root
 }
 
@@ -37,5 +39,24 @@ describe('editor controller', () => {
     expect(editor.getHTML()).toBe('<p>Safe</p>')
     expect(root.querySelector<HTMLTextAreaElement>('[data-rte-input]')!.value).toBe('<p>Safe</p>')
     expect(onChange).toHaveBeenCalled()
+  })
+
+  it('synchronizes dirty code view before an earlier consumer submit listener reads the input', () => {
+    const root = fixture()
+    const form = root.closest('form')!
+    const submittedValues: string[] = []
+    form.addEventListener('submit', (event) => {
+      event.preventDefault()
+      submittedValues.push(root.querySelector<HTMLTextAreaElement>('[data-rte-input]')!.value)
+    })
+    createEditor(root, createBasicCodeView)
+
+    root.querySelector<HTMLButtonElement>('[data-rte-command="codeView"]')!.click()
+    const source = root.querySelector<HTMLTextAreaElement>('.rte-code-textarea')!
+    source.value = '<p>Հայերեն <a href="mailto:support@apricode.am">support@apricode.am</a></p>'
+    source.dispatchEvent(new Event('input', { bubbles: true }))
+    form.dispatchEvent(new SubmitEvent('submit', { bubbles: true, cancelable: true }))
+
+    expect(submittedValues).toEqual(['<p>Հայերեն <a href="mailto:support@apricode.am">support@apricode.am</a></p>'])
   })
 })
