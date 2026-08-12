@@ -39,6 +39,8 @@ class RichTextRule implements ValidationRule
 
     private function canonicalStructure(string $html): string
     {
+        $html = str_replace(["\r\n", "\r"], "\n", $html);
+
         $document = new DOMDocument('1.0', 'UTF-8');
         $previous = libxml_use_internal_errors(true);
         $loaded = $document->loadHTML(

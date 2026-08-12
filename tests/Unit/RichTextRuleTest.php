@@ -30,6 +30,27 @@ class RichTextRuleTest extends TestCase
         $this->assertTrue(Validator::make(['content' => $html], ['content' => [new RichTextRule()]])->passes());
     }
 
+    public function test_it_accepts_full_armenian_html_with_windows_line_endings_and_a_mailto_link(): void
+    {
+        $html = "<h2>Գաղտնիության քաղաքականություն</h2>\r\n"
+            ."<p>Մենք հարգում ենք ձեր գաղտնիությունը և պաշտպանում ենք անձնական տվյալները։</p>\r\n"
+            ."<h3>Ինչ տվյալներ ենք հավաքում</h3>\r\n"
+            ."<p>Հարցերի դեպքում գրեք <a href=\"mailto:support@apricode.am\">support@apricode.am</a> հասցեին։</p>\r\n"
+            ."<pre><code>առաջին տող\r\n  երկրորդ տող</code></pre>";
+
+        $this->assertTrue(Validator::make(['content' => $html], ['content' => [new RichTextRule()]])->passes());
+    }
+
+    public function test_line_ending_normalization_preserves_significant_code_block_indentation(): void
+    {
+        $html = "<pre><code>first line\r\n  indented line</code></pre>";
+
+        $sanitized = app(\Arm092\RichTextEditor\Sanitization\RichTextSanitizer::class)->sanitize($html);
+
+        $this->assertStringContainsString("first line\n  indented line", (string) $sanitized);
+        $this->assertTrue(Validator::make(['content' => $html], ['content' => [new RichTextRule()]])->passes());
+    }
+
     #[DataProvider('unsafeHtml')]
     public function test_it_still_rejects_unsafe_or_unsupported_html(string $html): void
     {
@@ -42,6 +63,7 @@ class RichTextRuleTest extends TestCase
             'javascript URL' => ['<p><a href="javascript:alert(1)">Unsafe</a></p>'],
             'event handler' => ['<p><a href="https://example.com" onclick="alert(1)">Unsafe</a></p>'],
             'script element' => ['<p>Safe</p><script>alert(1)</script>'],
+            'script element after Windows line ending' => ["<p>Safe</p>\r\n<script>alert(1)</script>"],
             'unsupported attribute' => ['<p class="unexpected">Unsafe</p>'],
         ];
     }
