@@ -23,6 +23,13 @@ class RichTextRuleTest extends TestCase
         ];
     }
 
+    public function test_it_accepts_safe_editor_html_when_the_sanitizer_reorders_link_attributes(): void
+    {
+        $html = '<p><a target="_blank" rel="noopener noreferrer" href="mailto:support@apricode.am">Email support</a></p>';
+
+        $this->assertTrue(Validator::make(['content' => $html], ['content' => [new RichTextRule()]])->passes());
+    }
+
     #[DataProvider('unsafeHtml')]
     public function test_it_still_rejects_unsafe_or_unsupported_html(string $html): void
     {

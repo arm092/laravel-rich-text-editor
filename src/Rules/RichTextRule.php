@@ -4,6 +4,10 @@ namespace Arm092\RichTextEditor\Rules;
 
 use Arm092\RichTextEditor\Sanitization\RichTextSanitizer;
 use Closure;
+use DOMDocument;
+use DOMElement;
+use DOMNode;
+use DOMXPath;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 class RichTextRule implements ValidationRule
@@ -21,7 +25,7 @@ class RichTextRule implements ValidationRule
 
         $sanitizer = app(RichTextSanitizer::class);
         $sanitized = $sanitizer->sanitize($value, $this->profile);
-        if ($value !== null && $this->withoutCanonicalLinkRel(trim($value)) !== $this->withoutCanonicalLinkRel((string) $sanitized)) {
+        if ($value !== null && $this->canonicalStructure(trim($value)) !== $this->canonicalStructure((string) $sanitized)) {
             $fail('The :attribute contains unsupported or unsafe HTML.');
             return;
         }
@@ -33,10 +37,49 @@ class RichTextRule implements ValidationRule
         }
     }
 
-    private function withoutCanonicalLinkRel(string $html): string
+    private function canonicalStructure(string $html): string
     {
-        return preg_replace_callback('/<a\b[^>]*>/i', static function (array $matches): string {
-            return preg_replace('/\s+rel\s*=\s*(?:"[^"]*"|\'[^\']*\')/i', '', $matches[0]) ?? $matches[0];
-        }, $html) ?? $html;
+        $document = new DOMDocument('1.0', 'UTF-8');
+        $previous = libxml_use_internal_errors(true);
+        $loaded = $document->loadHTML(
+            '<?xml encoding="UTF-8"><div data-rte-validation-root="1">'.$html.'</div>',
+            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD,
+        );
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
+        if (! $loaded) {
+            return $html;
+        }
+
+        $root = (new DOMXPath($document))->query('//*[@data-rte-validation-root="1"]')->item(0);
+        if (! $root instanceof DOMElement) {
+            return $html;
+        }
+
+        return json_encode($this->nodeStructure($root), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: $html;
+    }
+
+    private function nodeStructure(DOMNode $node): array
+    {
+        $attributes = [];
+        if ($node instanceof DOMElement) {
+            foreach ($node->attributes as $attribute) {
+                $name = strtolower($attribute->name);
+                if ($node->tagName === 'a' && $name === 'rel') {
+                    continue;
+                }
+
+                $attributes[$name] = $attribute->value;
+            }
+            ksort($attributes);
+        }
+
+        $children = [];
+        foreach ($node->childNodes as $child) {
+            $children[] = $this->nodeStructure($child);
+        }
+
+        return [$node->nodeType, strtolower($node->nodeName), $node->nodeValue, $attributes, $children];
     }
 }
