@@ -345,6 +345,7 @@ export class RichTextEditorController implements PublicEditor {
       if (tool === 'heading') {
         const select = document.createElement('select')
         select.className = 'rte-select'
+        select.dataset.rteControl = 'heading'
         select.title = 'Text style'
         select.setAttribute('aria-label', 'Text style')
         select.append(new Option('Paragraph', 'paragraph'), ...(this.options.headings ?? [2, 3, 4]).map((level) => new Option(`Heading ${level}`, `h${level}`)))
@@ -664,6 +665,11 @@ export class RichTextEditorController implements PublicEditor {
       const isActive = active[button.dataset.rteCommand!] ?? false
       button.classList.toggle('is-active', isActive); button.setAttribute('aria-pressed', String(isActive))
     })
+    const heading = this.toolbar.querySelector<HTMLSelectElement>('[data-rte-control="heading"]')
+    if (heading) {
+      const level = (this.options.headings ?? [2, 3, 4]).find((candidate) => this.editor.isActive('heading', { level: candidate }))
+      heading.value = level ? `h${level}` : 'paragraph'
+    }
   }
 
   private syncInput(html: string, emit = true): void {

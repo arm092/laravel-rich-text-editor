@@ -44,6 +44,18 @@ test('default editor has no serious accessibility violations', async ({ page }) 
   expect(results.violations.filter((item) => item.impact === 'serious' || item.impact === 'critical')).toEqual([])
 })
 
+test('text style control follows the block at the current selection', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Playwright does not place a caret consistently in this scenario outside Chromium.')
+  await mount(page, enhanced)
+  const style = page.getByLabel('Text style')
+
+  await page.locator('.rte-prose h2').click()
+  await expect(style).toHaveValue('h2')
+
+  await page.locator('.rte-prose p').first().click()
+  await expect(style).toHaveValue('paragraph')
+})
+
 test('list markers remain visible when the host resets list styles', async ({ page }) => {
   await mount(page, enhanced)
   await page.addStyleTag({ content: 'ul, ol { list-style: none; }' })
