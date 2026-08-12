@@ -2,8 +2,11 @@
 
 namespace Arm092\RichTextEditor\Tests\Feature;
 
+use Arm092\RichTextEditor\Sanitization\RichTextSanitizer;
+use Arm092\RichTextEditor\View\Components\RichTextEditor;
 use Arm092\RichTextEditor\Tests\TestCase;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\View\ComponentAttributeBag;
 
 class BladeComponentsTest extends TestCase
 {
@@ -35,6 +38,20 @@ class BladeComponentsTest extends TestCase
         $view = Blade::render('<x-rich-text-editor name="content" />');
 
         $this->assertStringNotContainsString('data-rte-livewire', $view);
+    }
+
+    public function test_auto_assets_use_content_fingerprints_with_the_configured_asset_url(): void
+    {
+        config()->set('app.asset_url', 'https://cdn.example.com/subdirectory');
+        config()->set('rich-text-editor.assets.auto', true);
+        $component = new RichTextEditor(app(RichTextSanitizer::class), name: 'content');
+        $view = $component->render()
+            ->with($component->data())
+            ->with('attributes', new ComponentAttributeBag())
+            ->render();
+
+        $this->assertMatchesRegularExpression('#href="https://cdn\.example\.com/subdirectory/vendor/rich-text-editor/rich-text-editor\.css\?v=[a-f0-9]+"#', $view);
+        $this->assertMatchesRegularExpression('#src="https://cdn\.example\.com/subdirectory/vendor/rich-text-editor/rich-text-editor-with-code\.js\?v=[a-f0-9]+"#', $view);
     }
 
     public function test_content_component_preserves_cyrillic_and_armenian_text(): void

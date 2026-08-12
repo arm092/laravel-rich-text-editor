@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.1.8] - 2026-08-13
+
+### Fixed
+
+- Add stable cache-busting fingerprints to automatically loaded JS and CSS asset URLs, including CDN and subdirectory deployments.
+
 ## [1.1.7] - 2026-08-13
 
 ### Fixed
@@ -85,7 +91,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.7...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.8...HEAD
+[1.1.8]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.7...v1.1.8
 [1.1.7]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.6...v1.1.7
 [1.1.6]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.5...v1.1.6
 [1.1.5]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.4...v1.1.5

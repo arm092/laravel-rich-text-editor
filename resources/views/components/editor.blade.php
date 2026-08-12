@@ -10,8 +10,18 @@
 
 @if (config('rich-text-editor.assets.auto', true))
     @once
-        <link rel="stylesheet" href="{{ asset($assetPath.'/rich-text-editor.css') }}" data-rte-styles>
-        <script defer src="{{ asset($assetPath.'/'.$script) }}" data-rte-script></script>
+        @php
+            $versionedAsset = static function (string $file) use ($assetPath): string {
+                $published = public_path($assetPath.'/'.$file);
+                $source = dirname(__DIR__, 3).'/dist/'.$file;
+                $assetFile = is_file($published) ? $published : $source;
+                $fingerprint = dechex(filemtime($assetFile)).dechex(filesize($assetFile));
+
+                return asset($assetPath.'/'.$file).'?v='.$fingerprint;
+            };
+        @endphp
+        <link rel="stylesheet" href="{{ $versionedAsset('rich-text-editor.css') }}" data-rte-styles>
+        <script defer src="{{ $versionedAsset($script) }}" data-rte-script></script>
     @endonce
 @endif
 
