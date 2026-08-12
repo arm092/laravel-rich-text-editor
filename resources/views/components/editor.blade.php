@@ -19,6 +19,7 @@
     id="{{ $editorId }}"
     class="rich-text-editor{{ $fieldError ? ' rich-text-editor--invalid' : '' }}"
     data-rich-text-editor
+    @if ($wireModel->isNotEmpty()) data-rte-livewire @endif
     data-rte-options='@json($editorOptions)'
     x-data="richTextEditor"
     {{ $attributes->except(['id', 'class'])->whereDoesntStartWith('wire:model') }}

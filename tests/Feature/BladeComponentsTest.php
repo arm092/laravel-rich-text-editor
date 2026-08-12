@@ -15,6 +15,7 @@ class BladeComponentsTest extends TestCase
         $this->assertStringContainsString('data-rte-mount', $view);
         $this->assertStringContainsString('name="content"', $view);
         $this->assertStringContainsString('wire:model="content"', $view);
+        $this->assertStringContainsString('data-rte-livewire', $view);
         $this->assertStringContainsString('&lt;p&gt;Hello&lt;/p&gt;', $view);
         $this->assertStringContainsString('Content', $view);
     }
@@ -27,6 +28,13 @@ class BladeComponentsTest extends TestCase
 
         $this->assertStringContainsString('<p>Safe</p>', $view);
         $this->assertStringNotContainsString('<script>', $view);
+    }
+
+    public function test_plain_form_editor_does_not_enable_the_livewire_adapter(): void
+    {
+        $view = Blade::render('<x-rich-text-editor name="content" />');
+
+        $this->assertStringNotContainsString('data-rte-livewire', $view);
     }
 
     public function test_content_component_preserves_cyrillic_and_armenian_text(): void

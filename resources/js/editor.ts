@@ -266,7 +266,7 @@ export class RichTextEditorController implements PublicEditor {
     this.input.addEventListener('change', this.onExternalSync)
     this.root.addEventListener('rte:sync', this.onExternalSync)
     this.root.addEventListener('keydown', this.onRootKeydown, true)
-    document.addEventListener('livewire:navigated', this.onExternalSync)
+    if (this.root.hasAttribute('data-rte-livewire')) document.addEventListener('livewire:navigated', this.onExternalSync)
   }
 
   getHTML(): string { return normalizeEmpty(this.editor.getHTML()) }
@@ -293,7 +293,7 @@ export class RichTextEditorController implements PublicEditor {
     this.input.removeEventListener('change', this.onExternalSync)
     this.root.removeEventListener('rte:sync', this.onExternalSync)
     this.root.removeEventListener('keydown', this.onRootKeydown, true)
-    document.removeEventListener('livewire:navigated', this.onExternalSync)
+    if (this.root.hasAttribute('data-rte-livewire')) document.removeEventListener('livewire:navigated', this.onExternalSync)
     this.codeView?.destroy()
     this.editor.destroy()
     this.mount.innerHTML = ''

@@ -196,7 +196,7 @@ test('responsive table stays inside a mobile viewport and scrolls horizontally',
 test('multiple editors initialize once and a Livewire morph synchronizes only its scope', async ({ page }) => {
   await page.setContent(`<!doctype html><html><body>
     <div id="first" data-rich-text-editor><textarea data-rte-input><p>First</p></textarea><div data-rte-mount></div></div>
-    <div id="second" data-rich-text-editor><textarea data-rte-input><p>Second</p></textarea><div data-rte-mount></div></div>
+    <div id="second" data-rich-text-editor data-rte-livewire><textarea data-rte-input><p>Second</p></textarea><div data-rte-mount></div></div>
   </body></html>`)
   await page.evaluate(() => {
     const hooks: Record<string, (payload: unknown) => void> = {}
@@ -208,9 +208,11 @@ test('multiple editors initialize once and a Livewire morph synchronizes only it
   await expect(page.locator('.rte-shell')).toHaveCount(2)
 
   await page.evaluate(() => {
+    const first = document.querySelector<HTMLTextAreaElement>('#first [data-rte-input]')!
     const second = document.querySelector<HTMLTextAreaElement>('#second [data-rte-input]')!
+    first.value = '<p>Must not synchronize</p>'
     second.value = '<p>Morphed</p>'
-    ;(window as any).__livewireHooks['morph.updated']({ el: document.querySelector('#second') })
+    ;(window as any).__livewireHooks['morph.updated']({ el: document.body })
   })
   await expect(page.locator('#second .rte-prose')).toContainText('Morphed')
   await expect(page.locator('#first .rte-prose')).toContainText('First')

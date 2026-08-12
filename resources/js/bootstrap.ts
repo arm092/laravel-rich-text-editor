@@ -44,9 +44,9 @@ export function bootstrap(factory: CodeViewFactory) {
     window.Livewire.hook('morph.updated', (payload: any) => {
       const scope: ParentNode = payload?.el instanceof Element ? payload.el : document
       api.scan(scope)
-      const editors = scope instanceof HTMLElement && scope.matches('[data-rich-text-editor]')
+      const editors = scope instanceof HTMLElement && scope.matches('[data-rich-text-editor][data-rte-livewire]')
         ? [scope]
-        : [...scope.querySelectorAll<HTMLElement>('[data-rich-text-editor]')]
+        : [...scope.querySelectorAll<HTMLElement>('[data-rich-text-editor][data-rte-livewire]')]
       queueMicrotask(() => editors.forEach((element) => element.dispatchEvent(new CustomEvent('rte:sync'))))
     })
   }
