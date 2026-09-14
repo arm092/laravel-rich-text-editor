@@ -19,6 +19,7 @@ export type EditorOptions = {
   toolbar?: string[]
   headings?: number[]
   fontSizes?: Record<string, string>
+  colors?: { enabled?: boolean; palette?: string[] }
   links?: { schemes?: string[]; allow_relative?: boolean }
   images?: {
     schemes?: string[]

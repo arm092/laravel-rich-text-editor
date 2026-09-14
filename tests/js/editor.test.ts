@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createBasicCodeView } from '../../resources/js/basic-code-view'
 import { createEditor } from '../../resources/js/editor'
+import { resolveTailwind500Colors } from '../../resources/js/colors'
 
 function fixture() {
   const form = document.createElement('form')
@@ -17,6 +18,30 @@ function fixture() {
 }
 
 describe('editor controller', () => {
+  it('uses declared Tailwind 500 theme colors and falls back to the full configured palette', () => {
+    document.documentElement.style.setProperty('--color-brand-500', '#123456')
+
+    expect(resolveTailwind500Colors(['red', 'brand'])).toEqual([{ name: 'brand', value: '#123456' }])
+    document.documentElement.style.removeProperty('--color-brand-500')
+    expect(resolveTailwind500Colors(['red', 'blue']).map(({ name }) => name)).toEqual(['red', 'blue'])
+    document.documentElement.style.setProperty('--color-private-500', '#654321')
+    expect(resolveTailwind500Colors(['red', 'blue'])).toEqual([])
+    document.documentElement.style.removeProperty('--color-private-500')
+  })
+
+  it('renders the color picker from the active profile', () => {
+    const root = fixture()
+    root.dataset.rteOptions = JSON.stringify({
+      ...JSON.parse(root.dataset.rteOptions!),
+      toolbar: ['colors'],
+      colors: { enabled: true, palette: ['red', 'blue'] },
+    })
+
+    createEditor(root, createBasicCodeView)
+
+    expect(root.querySelector('[data-rte-command="colors"]')).not.toBeNull()
+    expect(root.querySelectorAll('[data-rte-color]').length).toBe(4)
+  })
   it('provides a stable public API and prevents duplicate initialization', () => {
     const root = fixture()
     const first = createEditor(root, createBasicCodeView)

@@ -2,6 +2,8 @@
 
 The standard profile includes undo, redo, headings H2–H4, bold, italic, underline, strikethrough, inline code, lists, blockquotes, code blocks, horizontal rules, links, URL images, tables, clear formatting, and code view.
 
+The color picker applies allowlisted Tailwind `text-{color}-500` and `bg-{color}-500` classes to selected text. Each section includes a reset action. Colors survive visual/code-view switching and safe server rendering without permitting arbitrary classes or inline styles.
+
 Links support relative URLs plus HTTP, HTTPS, mailto, and tel by default. Links opened in a new tab receive `noopener noreferrer`. Images accept HTTP or HTTPS URLs, require alternative text or an explicit decorative choice, and support left, center, and right alignment.
 
 ## Responsive image resizing

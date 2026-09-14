@@ -67,7 +67,7 @@ class RichTextSanitizer
         return $config
             ->allowElement('a', ['href', 'title', 'target', 'rel'])
             ->allowElement('img', ['src', 'alt', 'title', 'data-rte-align', 'style'])
-            ->allowElement('span', ['data-rte-size'])
+            ->allowElement('span', ['data-rte-size', 'class'])
             ->allowLinkSchemes($settings['links']['schemes'] ?? ['http', 'https'])
             ->allowRelativeLinks((bool) ($settings['links']['allow_relative'] ?? false))
             ->allowMediaSchemes($settings['images']['schemes'] ?? ['http', 'https'])
@@ -93,7 +93,7 @@ class RichTextSanitizer
         $allowedAttributes = [
             'a' => ['href', 'title', 'target', 'rel'],
             'img' => ['src', 'alt', 'title', 'data-rte-align', 'style'],
-            'span' => ['data-rte-size'],
+            'span' => ['data-rte-size', 'class'],
             'td' => ['colspan', 'rowspan', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color'],
             'th' => ['colspan', 'rowspan', 'scope', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color'],
         ];
@@ -130,6 +130,11 @@ class RichTextSanitizer
         foreach ($xpath->query('//*[@data-rte-size]') ?: [] as $node) {
             if ($node instanceof DOMElement && ! in_array($node->getAttribute('data-rte-size'), $sizes, true)) {
                 $node->removeAttribute('data-rte-size');
+            }
+        }
+        foreach ($xpath->query('//span[@class]') ?: [] as $node) {
+            if ($node instanceof DOMElement) {
+                $this->normalizeColorClasses($node, $settings);
             }
         }
         if ($settings['tables']['enabled'] ?? false) {
@@ -279,6 +284,30 @@ class RichTextSanitizer
         }
 
         return '#'.$hex;
+    }
+
+    /** @param array<string, mixed> $settings */
+    private function normalizeColorClasses(DOMElement $node, array $settings): void
+    {
+        $allowed = ($settings['colors']['enabled'] ?? false)
+            ? array_map('strval', $settings['colors']['palette'] ?? [])
+            : [];
+        $classes = preg_split('/\s+/', trim($node->getAttribute('class'))) ?: [];
+        $canonical = [];
+        foreach (['text', 'bg'] as $prefix) {
+            foreach ($classes as $class) {
+                if (preg_match('/^'.preg_quote($prefix, '/').'-([a-z0-9-]+)-500$/', $class, $matches) === 1
+                    && in_array($matches[1], $allowed, true)) {
+                    $canonical[] = $class;
+                    break;
+                }
+            }
+        }
+        if ($canonical === []) {
+            $node->removeAttribute('class');
+        } else {
+            $node->setAttribute('class', implode(' ', $canonical));
+        }
     }
 
     /** @return array<string, string> */

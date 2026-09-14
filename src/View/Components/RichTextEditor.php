@@ -46,6 +46,7 @@ class RichTextEditor extends Component
             'toolbar' => $profileSettings['toolbar'] ?? [],
             'headings' => $profileSettings['headings'] ?? [2, 3, 4],
             'fontSizes' => $profileSettings['font_sizes'] ?? [],
+            'colors' => $profileSettings['colors'] ?? ['enabled' => false, 'palette' => []],
             'links' => $profileSettings['links'] ?? [],
             'images' => $profileSettings['images'] ?? [],
             'tables' => $profileSettings['tables'] ?? ['enabled' => false],

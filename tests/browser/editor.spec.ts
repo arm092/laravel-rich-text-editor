@@ -8,7 +8,7 @@ const styles = resolve('dist/rich-text-editor.css')
 
 async function mount(page: Page, script: string) {
   await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Editor test</title></head><body>
-    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","|","bold","italic","link","image","table","|","codeView"],"headings":[2,3,4],"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
+    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","|","bold","italic","link","image","colors","table","|","codeView"],"headings":[2,3,4],"colors":{"enabled":true,"palette":["red","blue"]},"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
       <label for="content">Content</label><textarea id="content" name="content" data-rte-input><h2>Hello</h2><p>Editor content</p><img src="https://example.com/image.jpg" alt="Example"></textarea><div data-rte-mount></div>
     </div></form></main></body></html>`)
   await page.addStyleTag({ path: styles })
@@ -100,6 +100,22 @@ test('list markers remain visible when the host resets list styles', async ({ pa
   await expect(page.locator('.rte-content ol')).toHaveCSS('list-style-type', 'decimal')
 })
 
+test('color picker applies allowlisted Tailwind 500 classes to selected text', async ({ page }) => {
+  await mount(page, basic)
+  await page.getByText('Hello', { exact: true }).click()
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Shift+End')
+  await page.locator('[data-rte-command="colors"]').click()
+  await page.locator('[data-rte-color="red"][data-rte-color-mode="text"]').click()
+  await page.getByText('Hello', { exact: true }).click()
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Shift+End')
+  await page.locator('[data-rte-command="colors"]').click()
+  await page.locator('[data-rte-color="blue"][data-rte-color-mode="background"]').click()
+
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/<span class="text-red-500"><span class="bg-blue-500">Hello<\/span><\/span>/)
+})
+
 test('image resize handle persists a responsive width with keyboard controls', async ({ page }) => {
   await mount(page, enhanced)
   const handle = page.getByRole('slider', { name: 'Resize image' })
@@ -131,8 +147,8 @@ test('table dropdown inserts and edits a canonical table', async ({ page }) => {
   await page.getByRole('button', { name: 'Table', exact: true }).click()
   await page.getByLabel('Horizontal alignment').selectOption('center')
   await page.getByLabel('Vertical alignment').selectOption('middle')
-  await page.getByLabel('Text color').selectOption('error')
-  await page.getByLabel('Background color').selectOption('paper')
+  await page.getByLabel('Text color', { exact: true }).selectOption('error')
+  await page.getByLabel('Background color', { exact: true }).selectOption('paper')
   await expect(page.locator('[data-rte-input]')).toHaveValue(/data-rte-horizontal-align="center"/)
   await expect(page.locator('[data-rte-input]')).toHaveValue(/data-rte-background-color="paper"/)
 

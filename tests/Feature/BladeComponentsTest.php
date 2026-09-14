@@ -92,6 +92,7 @@ class BladeComponentsTest extends TestCase
         $this->assertStringContainsString('#123456', $view);
         $this->assertStringContainsString('"enabled":false', $view);
         $this->assertStringContainsString('"tables":{"enabled":true', $view);
+        $this->assertStringContainsString('"colors":{"enabled":true', $view);
     }
 
     public function test_missing_or_empty_profile_falls_back_to_standard(): void

@@ -31,10 +31,18 @@ return [
             'toolbar' => [
                 'undo', 'redo', '|', 'heading', '|', 'bold', 'italic', 'underline', 'strike',
                 'code', '|', 'bulletList', 'orderedList', 'blockquote', 'codeBlock', 'horizontalRule',
-                '|', 'link', 'image', 'clearFormatting', '|', 'codeView',
+                '|', 'link', 'image', 'colors', 'clearFormatting', '|', 'codeView',
                 '|', 'table',
             ],
             'font_sizes' => [],
+            'colors' => [
+                'enabled' => true,
+                'palette' => [
+                    'slate', 'gray', 'zinc', 'neutral', 'stone', 'mauve', 'olive', 'mist', 'taupe',
+                    'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan',
+                    'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose',
+                ],
+            ],
             'links' => ['schemes' => ['http', 'https', 'mailto', 'tel'], 'allow_relative' => true],
             'images' => [
                 'schemes' => ['http', 'https'],
@@ -58,6 +66,7 @@ return [
                 'bulletList', 'orderedList', '|', 'link', 'image', '|', 'codeView',
             ],
             'font_sizes' => [],
+            'colors' => ['enabled' => false, 'palette' => []],
             'links' => ['schemes' => ['http', 'https', 'mailto', 'tel'], 'allow_relative' => true],
             'images' => [
                 'schemes' => ['http', 'https'],

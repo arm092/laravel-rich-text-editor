@@ -15,6 +15,16 @@ class RichTextSanitizerTest extends TestCase
         $this->assertSame($html, app(RichTextSanitizer::class)->sanitize($html));
     }
 
+    public function test_it_keeps_only_allowlisted_tailwind_500_color_classes(): void
+    {
+        $html = '<p><span class="bg-blue-500 text-red-500 font-bold text-brand-600">Colored</span></p>';
+
+        $this->assertSame(
+            '<p><span class="text-red-500 bg-blue-500">Colored</span></p>',
+            app(RichTextSanitizer::class)->sanitize($html),
+        );
+    }
+
     public function test_it_preserves_cyrillic_and_armenian_text_inside_html(): void
     {
         $html = '<p>Русский Հայերեն</p>';

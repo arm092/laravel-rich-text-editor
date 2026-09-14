@@ -95,6 +95,7 @@ Both files expose the same API: `create`, `scan`, `destroy`, `getHTML`, `setHTML
 | `assets.auto` | `true` | Lets the Blade component include published assets once. |
 | `profiles.*.headings` | `[2, 3, 4]` | Restricts heading levels. |
 | `profiles.*.font_sizes` | `[]` | Enables only named, allowlisted text sizes. |
+| `profiles.*.colors` | Tailwind `500` palette | Enables allowlisted text and background colors. |
 | `profiles.*.images.resize` | `20–100`, step `5` | Controls safe responsive image resizing. |
 | `profiles.*.tables.enabled` | `true` in `standard` | Enables responsive tables and their toolbar. |
 | `profiles.*.tables.palette` | Eight theme tokens | Restricts cell text and background colors. |

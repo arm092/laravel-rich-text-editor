@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-14
+
+### Added
+
+- Add a theme-aware text and background color picker that stores safe, allowlisted Tailwind `500` utility classes and falls back to the standard Tailwind palette when the host theme declares no colors.
+
 ## [1.1.10] - 2026-08-13
 
 ### Fixed
@@ -103,7 +109,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.10...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.10...v1.2.0
 [1.1.10]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.9...v1.1.10
 [1.1.9]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.8...v1.1.9
 [1.1.8]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.7...v1.1.8

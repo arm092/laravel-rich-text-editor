@@ -1,4 +1,4 @@
-import { Editor, Extension, type Extensions, type NodeViewRendererProps } from '@tiptap/core'
+import { Editor, Extension, Mark, type Extensions, type NodeViewRendererProps } from '@tiptap/core'
 import Image from '@tiptap/extension-image'
 import { Table } from '@tiptap/extension-table/table'
 import { TableCell } from '@tiptap/extension-table/cell'
@@ -6,6 +6,7 @@ import { TableHeader } from '@tiptap/extension-table/header'
 import { TableRow } from '@tiptap/extension-table/row'
 import { TextStyle } from '@tiptap/extension-text-style'
 import StarterKit from '@tiptap/starter-kit'
+import { resolveTailwind500Colors } from './colors'
 import { normalizeEmpty, sanitizeHtml } from './sanitize'
 import type { CodeViewAdapter, CodeViewFactory, EditorOptions, PublicEditor } from './types'
 
@@ -132,6 +133,28 @@ const RestrictedTextSize = Extension.create({
   },
 })
 
+function colorName(element: HTMLElement, prefix: 'text' | 'bg'): string | null {
+  const match = [...element.classList].map((name) => name.match(new RegExp(`^${prefix}-([a-z0-9-]+)-500$`))).find(Boolean)
+  return match?.[1] ?? null
+}
+
+function restrictedColorMark(name: string, prefix: 'text' | 'bg') {
+  return Mark.create({
+    name,
+    addAttributes() { return { color: { default: null } } },
+    parseHTML() {
+      return [{
+        tag: 'span[class]',
+        getAttrs: (element) => {
+          const color = colorName(element as HTMLElement, prefix)
+          return color ? { color } : false
+        },
+      }]
+    },
+    renderHTML({ mark }) { return ['span', { class: `${prefix}-${mark.attrs.color}-500` }, 0] },
+  })
+}
+
 const BUTTONS: Record<string, { label: string; icon: string }> = {
   undo: { label: 'Undo', icon: '↶' }, redo: { label: 'Redo', icon: '↷' },
   bold: { label: 'Bold', icon: '<b>B</b>' }, italic: { label: 'Italic', icon: '<i>I</i>' },
@@ -141,7 +164,7 @@ const BUTTONS: Record<string, { label: string; icon: string }> = {
   codeBlock: { label: 'Code block', icon: '{ }' }, horizontalRule: { label: 'Horizontal rule', icon: '―' },
   link: { label: 'Add link', icon: '🔗' }, image: { label: 'Add image', icon: '▧' },
   clearFormatting: { label: 'Clear formatting', icon: 'Tx' }, codeView: { label: 'HTML code view', icon: '&lt;⁄&gt;' },
-  table: { label: 'Table', icon: '▦' },
+  table: { label: 'Table', icon: '▦' }, colors: { label: 'Text and background color', icon: 'A' },
 }
 
 function tableCellAttributes(includeScope = false) {
@@ -216,7 +239,7 @@ export class RichTextEditorController implements PublicEditor {
   private readonly onSubmit = (event: SubmitEvent) => this.handleSubmit(event)
   private readonly onExternalSync = () => this.syncFromInput()
   private readonly onRootKeydown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') this.closeTableMenu()
+    if (event.key === 'Escape') { this.closeTableMenu(); this.closeColorMenu() }
   }
 
   constructor(private readonly root: HTMLElement, private readonly codeViewFactory: CodeViewFactory, options: EditorOptions = {}) {
@@ -327,6 +350,8 @@ export class RichTextEditorController implements PublicEditor {
       createAlignedImage(this.options.images?.resize).configure({ inline: false, allowBase64: false }),
       TextStyle,
       RestrictedTextSize,
+      restrictedColorMark('restrictedTextColor', 'text'),
+      restrictedColorMark('restrictedBackgroundColor', 'bg'),
     ]
     if (this.options.tables?.enabled) {
       extensions.push(RestrictedTable.configure({ resizable: false }), TableRow, RestrictedTableHeader, RestrictedTableCell)
@@ -359,6 +384,10 @@ export class RichTextEditorController implements PublicEditor {
       if (tool === 'codeView' && this.options.codeView?.enabled === false) continue
       if (tool === 'table') {
         if (this.options.tables?.enabled) this.toolbar.append(this.createTableControl())
+        continue
+      }
+      if (tool === 'colors') {
+        if (this.options.colors?.enabled !== false) this.toolbar.append(this.createColorControl())
         continue
       }
       const definition = BUTTONS[tool]
@@ -538,6 +567,73 @@ export class RichTextEditorController implements PublicEditor {
     })
     control.append(toggle, menu)
     return control
+  }
+
+  private createColorControl(): HTMLElement {
+    const control = this.createElement('div', 'rte-color-control')
+    const toggle = document.createElement('button')
+    toggle.type = 'button'
+    toggle.className = 'rte-button rte-color-toggle'
+    toggle.dataset.rteCommand = 'colors'
+    toggle.setAttribute('aria-label', BUTTONS.colors.label)
+    toggle.setAttribute('aria-expanded', 'false')
+    toggle.innerHTML = '<span aria-hidden="true">A</span><span class="rte-color-indicator"></span>'
+    const menu = this.createElement('div', 'rte-color-menu')
+    menu.hidden = true
+    menu.setAttribute('aria-label', 'Text and background colors')
+    const colors = resolveTailwind500Colors(this.options.colors?.palette ?? [])
+    menu.append(this.createColorSection('Text color', 'text', colors), this.createColorSection('Background color', 'background', colors))
+    toggle.addEventListener('click', () => {
+      menu.hidden = !menu.hidden
+      toggle.setAttribute('aria-expanded', String(!menu.hidden))
+      if (!menu.hidden) menu.querySelector<HTMLButtonElement>('button')?.focus()
+    })
+    toggle.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowDown') return
+      event.preventDefault(); menu.hidden = false; toggle.setAttribute('aria-expanded', 'true')
+      menu.querySelector<HTMLButtonElement>('button')?.focus()
+    })
+    control.append(toggle, menu)
+    return control
+  }
+
+  private createColorSection(label: string, mode: 'text' | 'background', colors: Array<{ name: string; value: string }>): HTMLElement {
+    const section = this.createElement('div', 'rte-color-section')
+    const heading = this.createElement('span', 'rte-color-label'); heading.textContent = label
+    const grid = this.createElement('div', 'rte-color-grid')
+    const reset = document.createElement('button')
+    reset.type = 'button'; reset.className = 'rte-color-swatch rte-color-reset'; reset.title = `Reset ${label.toLowerCase()}`
+    reset.setAttribute('aria-label', reset.title); reset.textContent = '×'
+    reset.addEventListener('mousedown', (event) => event.preventDefault())
+    reset.addEventListener('click', () => this.applyTextColor(mode, null))
+    grid.append(reset)
+    for (const color of colors) {
+      const button = document.createElement('button')
+      button.type = 'button'; button.className = 'rte-color-swatch'; button.dataset.rteColor = color.name
+      button.dataset.rteColorMode = mode; button.title = `${label}: ${color.name} 500`; button.setAttribute('aria-label', button.title)
+      button.style.setProperty('--rte-swatch', color.value)
+      button.addEventListener('mousedown', (event) => event.preventDefault())
+      button.addEventListener('click', () => this.applyTextColor(mode, color.name))
+      grid.append(button)
+    }
+    section.append(heading, grid)
+    return section
+  }
+
+  private applyTextColor(mode: 'text' | 'background', color: string | null): void {
+    const mark = mode === 'text' ? 'restrictedTextColor' : 'restrictedBackgroundColor'
+    const chain = this.editor.chain().focus()
+    if (color) chain.setMark(mark, { color }).run()
+    else chain.unsetMark(mark).run()
+    this.closeColorMenu()
+    this.refreshToolbar()
+  }
+
+  private closeColorMenu(): void {
+    const menu = this.toolbar?.querySelector<HTMLElement>('.rte-color-menu')
+    const toggle = this.toolbar?.querySelector<HTMLButtonElement>('[data-rte-command="colors"]')
+    if (menu) menu.hidden = true
+    toggle?.setAttribute('aria-expanded', 'false')
   }
 
   private createTableSelect(label: string, attribute: string, values: string[]): HTMLElement {

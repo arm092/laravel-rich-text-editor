@@ -8,7 +8,7 @@ const TABLE_TAGS = ['table', 'tbody', 'tr', 'th', 'td']
 const ATTRIBUTES: Record<string, Set<string>> = {
   a: new Set(['href', 'title', 'target', 'rel']),
   img: new Set(['src', 'alt', 'title', 'data-rte-align', 'style']),
-  span: new Set(['data-rte-size']),
+  span: new Set(['data-rte-size', 'class']),
   td: new Set(['colspan', 'rowspan', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color']),
   th: new Set(['colspan', 'rowspan', 'scope', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color']),
 }
@@ -95,11 +95,26 @@ export function sanitizeHtml(source: string, options: EditorOptions): SanitizeRe
       }
     }
 
+    if (tag === 'span') normalizeColorClasses(element, options, diagnostics)
+
     if (tag === 'td' || tag === 'th') validateTableCell(element, tag, options, diagnostics)
   }
 
   const html = normalizeEmpty(root.innerHTML)
   return { html, changed: normalizeComparison(source) !== normalizeComparison(html), diagnostics }
+}
+
+function normalizeColorClasses(element: HTMLElement, options: EditorOptions, diagnostics: SourceDiagnostic[]): void {
+  const allowed = new Set(options.colors?.enabled === false ? [] : options.colors?.palette ?? [])
+  const classes = element.className.trim().split(/\s+/).filter(Boolean)
+  const text = classes.find((name) => name.startsWith('text-') && allowed.has(name.slice(5, -4)) && name.endsWith('-500'))
+  const background = classes.find((name) => name.startsWith('bg-') && allowed.has(name.slice(3, -4)) && name.endsWith('-500'))
+  const canonical = [text, background].filter(Boolean).join(' ')
+  if (classes.some((name) => ![text, background].includes(name))) {
+    diagnostics.push({ message: 'The text contains an unsupported color or CSS class.', severity: 'warning' })
+  }
+  if (canonical) element.className = canonical
+  else element.removeAttribute('class')
 }
 
 function normalizeTableInput(root: HTMLElement, options: EditorOptions, diagnostics: SourceDiagnostic[]): void {
