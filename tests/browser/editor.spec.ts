@@ -107,6 +107,7 @@ test('color picker applies allowlisted Tailwind 500 classes to selected text', a
   await page.keyboard.press('Shift+End')
   await page.locator('[data-rte-command="colors"]').click()
   await page.locator('[data-rte-color="red"][data-rte-color-mode="text"]').click()
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/<span class="text-red-500">Hello<\/span>/)
   await page.getByText('Hello', { exact: true }).click()
   await page.keyboard.press('Home')
   await page.keyboard.press('Shift+End')

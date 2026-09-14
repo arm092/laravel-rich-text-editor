@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-09-14
+
+### Fixed
+
+- Use stable sRGB fallbacks for Tailwind color swatches so committed browser bundles build byte-for-byte identically on Windows and Linux.
+
 ## [1.2.0] - 2026-09-14
 
 ### Added
@@ -109,7 +115,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.10...v1.2.0
 [1.1.10]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.9...v1.1.10
 [1.1.9]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.8...v1.1.9
