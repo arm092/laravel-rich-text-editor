@@ -7,6 +7,8 @@ composer update arm092/laravel-rich-text-editor
 php artisan rich-text-editor:publish --force
 ```
 
+Composer does not overwrite `config/rich-text-editor.php`. If the configuration is customized, compare it with the package config and merge new toolbar entries and profile settings manually. In particular, the color picker introduced in 1.2 requires both the `colors` toolbar entry and the `profiles.*.colors` settings. Using `rich-text-editor:publish --force` replaces the published config as well as the assets, so preserve intentional customizations first.
+
 Review custom config and view overrides before replacing them.
 
 ## Upgrading from 0.1 to 1.0
@@ -20,3 +22,7 @@ The public Blade, JavaScript, cast, validation, sanitizer, and rendering APIs re
 Version 1.1 adds responsive tables to the `standard` profile. Republish the browser assets, then merge `profiles.standard.tables` and `profiles.minimal.tables` from the package config into customized configuration files. Existing legacy table alignment and palette colors are canonicalized when sanitized; unsupported layout attributes and colors are removed.
 
 The public APIs, `code_view.enhanced` option, publish command, and both browser bundle names remain unchanged.
+
+## Upgrading to 1.2
+
+Version 1.2 adds the Tailwind theme color picker to the default `standard` profile. Existing published profiles remain unchanged until the `colors` toolbar entry and `colors` profile settings are merged or the config is republished with `--force`. Inline code and code blocks are no longer present in the default toolbar as of 1.2.2, but remain available by adding `code` or `codeBlock` to a custom toolbar.

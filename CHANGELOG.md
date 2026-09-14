@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-09-14
+
+### Changed
+
+- Remove inline code and code blocks from the default `standard` toolbar while keeping them available through custom profiles, and give HTML code view an unambiguous text label.
+
+### Fixed
+
+- Add native tooltips to the table and color picker toolbar buttons.
+
+### Notes
+
+- Published application configuration is not overwritten during Composer updates. Existing installations must merge the `colors` toolbar entry and `profiles.*.colors` settings or intentionally republish configuration with `rich-text-editor:publish --force` to enable the default color picker.
+
 ## [1.2.1] - 2026-09-14
 
 ### Fixed
@@ -115,7 +129,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.10...v1.2.0
 [1.1.10]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.9...v1.1.10

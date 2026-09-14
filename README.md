@@ -20,7 +20,7 @@ composer require arm092/laravel-rich-text-editor
 php artisan rich-text-editor:publish
 ```
 
-The publish command copies the configuration and prebuilt assets. Use `--force` after upgrades when you intentionally want to refresh published files.
+The publish command copies the configuration and prebuilt assets. Published configuration is owned by the application and is not changed by Composer updates. After an upgrade, merge new profile options manually or use `--force` when you intentionally want to replace the published config and assets with package defaults.
 
 ## Blade in one minute
 

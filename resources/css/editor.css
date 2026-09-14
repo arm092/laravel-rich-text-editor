@@ -33,6 +33,7 @@
   .rte-button:active { transform: translateY(1px); }
   .rte-button:focus-visible, .rte-select:focus-visible, .rte-code-action:focus-visible { outline: 2px solid var(--rte-info); outline-offset: 1px; }
   .rte-button.is-active { border-color: color-mix(in srgb, var(--rte-primary), transparent 55%); background: color-mix(in srgb, var(--rte-primary), transparent 84%); color: var(--rte-ink); }
+  .rte-button[data-rte-command="codeView"] { width: auto; padding-inline: .45rem; font-size: .68rem; font-weight: 750; letter-spacing: .02em; }
   .rte-select { width: auto; padding: 0 1.75rem 0 .65rem; }
   .rte-table-control { position: relative; }
   .rte-table-menu { position: absolute; z-index: 30; top: calc(100% + .4rem); right: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .35rem; width: min(26rem, calc(100vw - 2rem)); max-height: min(32rem, 70vh); overflow-y: auto; border: 1px solid var(--rte-border); border-radius: .75rem; padding: .65rem; background: var(--rte-white); box-shadow: 0 18px 50px rgba(6, 6, 6, .2); }

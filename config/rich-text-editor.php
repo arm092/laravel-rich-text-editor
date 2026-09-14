@@ -30,7 +30,7 @@ return [
             'headings' => [2, 3, 4],
             'toolbar' => [
                 'undo', 'redo', '|', 'heading', '|', 'bold', 'italic', 'underline', 'strike',
-                'code', '|', 'bulletList', 'orderedList', 'blockquote', 'codeBlock', 'horizontalRule',
+                '|', 'bulletList', 'orderedList', 'blockquote', 'horizontalRule',
                 '|', 'link', 'image', 'colors', 'clearFormatting', '|', 'codeView',
                 '|', 'table',
             ],

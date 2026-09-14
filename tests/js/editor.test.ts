@@ -42,6 +42,35 @@ describe('editor controller', () => {
     expect(root.querySelector('[data-rte-command="colors"]')).not.toBeNull()
     expect(root.querySelectorAll('[data-rte-color]').length).toBe(4)
   })
+
+  it('labels popup toolbar controls with native tooltips', () => {
+    const root = fixture()
+    root.dataset.rteOptions = JSON.stringify({
+      ...JSON.parse(root.dataset.rteOptions!),
+      toolbar: ['colors', 'table'],
+      colors: { enabled: true, palette: ['red'] },
+      tables: { enabled: true },
+    })
+
+    createEditor(root, createBasicCodeView)
+
+    expect(root.querySelector<HTMLButtonElement>('[data-rte-command="colors"]')?.title).toBe('Text and background color')
+    expect(root.querySelector<HTMLButtonElement>('[data-rte-command="table"]')?.title).toBe('Table')
+  })
+
+  it('uses distinct icons for inline code and HTML code view', () => {
+    const root = fixture()
+    root.dataset.rteOptions = JSON.stringify({
+      ...JSON.parse(root.dataset.rteOptions!),
+      toolbar: ['code', 'codeView'],
+    })
+
+    createEditor(root, createBasicCodeView)
+
+    const inlineCode = root.querySelector<HTMLButtonElement>('[data-rte-command="code"]')
+    const codeView = root.querySelector<HTMLButtonElement>('[data-rte-command="codeView"]')
+    expect(inlineCode?.textContent).not.toBe(codeView?.textContent)
+  })
   it('provides a stable public API and prevents duplicate initialization', () => {
     const root = fixture()
     const first = createEditor(root, createBasicCodeView)

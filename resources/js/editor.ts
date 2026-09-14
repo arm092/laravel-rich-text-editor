@@ -163,7 +163,7 @@ const BUTTONS: Record<string, { label: string; icon: string }> = {
   orderedList: { label: 'Numbered list', icon: '1≡' }, blockquote: { label: 'Blockquote', icon: '❝' },
   codeBlock: { label: 'Code block', icon: '{ }' }, horizontalRule: { label: 'Horizontal rule', icon: '―' },
   link: { label: 'Add link', icon: '🔗' }, image: { label: 'Add image', icon: '▧' },
-  clearFormatting: { label: 'Clear formatting', icon: 'Tx' }, codeView: { label: 'HTML code view', icon: '&lt;⁄&gt;' },
+  clearFormatting: { label: 'Clear formatting', icon: 'Tx' }, codeView: { label: 'HTML code view', icon: 'HTML' },
   table: { label: 'Table', icon: '▦' }, colors: { label: 'Text and background color', icon: 'A' },
 }
 
@@ -520,6 +520,7 @@ export class RichTextEditorController implements PublicEditor {
     toggle.type = 'button'
     toggle.className = 'rte-button'
     toggle.dataset.rteCommand = 'table'
+    toggle.title = BUTTONS.table.label
     toggle.setAttribute('aria-label', 'Table')
     toggle.setAttribute('aria-expanded', 'false')
     toggle.innerHTML = BUTTONS.table.icon
@@ -575,6 +576,7 @@ export class RichTextEditorController implements PublicEditor {
     toggle.type = 'button'
     toggle.className = 'rte-button rte-color-toggle'
     toggle.dataset.rteCommand = 'colors'
+    toggle.title = BUTTONS.colors.label
     toggle.setAttribute('aria-label', BUTTONS.colors.label)
     toggle.setAttribute('aria-expanded', 'false')
     toggle.innerHTML = '<span aria-hidden="true">A</span><span class="rte-color-indicator"></span>'

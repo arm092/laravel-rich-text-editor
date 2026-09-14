@@ -1,6 +1,6 @@
 # Toolbar and formatting
 
-The standard profile includes undo, redo, headings H2–H4, bold, italic, underline, strikethrough, inline code, lists, blockquotes, code blocks, horizontal rules, links, URL images, tables, clear formatting, and code view.
+The standard profile includes undo, redo, headings H2–H4, bold, italic, underline, strikethrough, lists, blockquotes, horizontal rules, links, URL images, text and background colors, tables, clear formatting, and code view. Inline code and code blocks remain available as the `code` and `codeBlock` toolbar entries for custom profiles but are disabled by default.
 
 The color picker applies allowlisted Tailwind `text-{color}-500` and `bg-{color}-500` classes to selected text. Each section includes a reset action. Colors survive visual/code-view switching and safe server rendering without permitting arbitrary classes or inline styles.
 
