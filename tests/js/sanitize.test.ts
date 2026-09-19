@@ -80,6 +80,19 @@ describe('HTML sanitization', () => {
     expect(result.changed).toBe(false)
   })
 
+  it('preserves only canonical CSP-safe table widths', () => {
+    const allowed = sanitizeHtml('<table data-rte-width="75"><tbody><tr><td><p>Cell</p></td></tr></tbody></table>', options)
+    const full = sanitizeHtml('<table data-rte-width="100"><tbody><tr><td><p>Cell</p></td></tr></tbody></table>', options)
+    const blocked = sanitizeHtml('<table data-rte-width="73" width="75" style="width:75%" class="wide"><tbody><tr><td><p>Cell</p></td></tr></tbody></table>', options)
+
+    expect(allowed.html).toContain('<table data-rte-width="75">')
+    expect(full.html).toContain('<table>')
+    expect(full.html).not.toContain('data-rte-width')
+    expect(blocked.html).toContain('<table>')
+    expect(blocked.html).not.toMatch(/data-rte-width|width=|style=|class=/)
+    expect(blocked.diagnostics.some((diagnostic) => diagnostic.message.includes('table width'))).toBe(true)
+  })
+
   it('canonicalizes legacy table alignment and palette colors', () => {
     const result = sanitizeHtml('<table border="1"><tr><td align="RIGHT" valign="TOP" bgcolor="#f8f8f2" style="color:#F92672;width:10px" nowrap><p>Cell</p></td></tr></table>', options)
 

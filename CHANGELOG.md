@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-19
+
+### Added
+
+- Add CSP-safe table resizing from 20% through 100% with pointer, touch, keyboard, exact-width, and `Full width` controls whenever tables are enabled.
+
+### Changed
+
+- Store reduced table widths as allowlisted `data-rte-width` values and keep full width as the canonical default without an attribute.
+- Remove the decorative-image checkbox from the visual image dialog and require alternative text for newly inserted images while preserving existing `alt=""` content.
+
 ## [1.2.2] - 2026-09-14
 
 ### Changed
@@ -129,7 +140,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.1.10...v1.2.0

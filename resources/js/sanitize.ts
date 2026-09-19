@@ -6,6 +6,7 @@ const BASE_TAGS = new Set([
 const TABLE_TAGS = ['table', 'tbody', 'tr', 'th', 'td']
 
 const ATTRIBUTES: Record<string, Set<string>> = {
+  table: new Set(['data-rte-width']),
   a: new Set(['href', 'title', 'target', 'rel']),
   img: new Set(['src', 'alt', 'title', 'data-rte-align', 'style']),
   span: new Set(['data-rte-size', 'class']),
@@ -97,11 +98,27 @@ export function sanitizeHtml(source: string, options: EditorOptions): SanitizeRe
 
     if (tag === 'span') normalizeColorClasses(element, options, diagnostics)
 
+    if (tag === 'table') validateTableWidth(element, diagnostics)
     if (tag === 'td' || tag === 'th') validateTableCell(element, tag, options, diagnostics)
   }
 
   const html = normalizeEmpty(root.innerHTML)
   return { html, changed: normalizeComparison(source) !== normalizeComparison(html), diagnostics }
+}
+
+function validateTableWidth(table: HTMLElement, diagnostics: SourceDiagnostic[]): void {
+  if (!table.hasAttribute('data-rte-width')) return
+  const value = Number(table.dataset.rteWidth)
+  if (value === 100) {
+    table.removeAttribute('data-rte-width')
+    return
+  }
+  if (!Number.isInteger(value) || value < 20 || value > 95 || value % 5 !== 0) {
+    diagnostics.push({ message: 'The table width must be a supported percentage from 20% through 100%.', severity: 'warning' })
+    table.removeAttribute('data-rte-width')
+    return
+  }
+  table.dataset.rteWidth = String(value)
 }
 
 function normalizeColorClasses(element: HTMLElement, options: EditorOptions, diagnostics: SourceDiagnostic[]): void {

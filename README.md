@@ -1,6 +1,6 @@
 # Laravel Rich Text Editor
 
-A modern, secure rich text editor for Laravel forms, Alpine.js, Tailwind CSS, and Livewire. It stores semantic HTML, ships with its browser assets, provides responsive images and tables, and includes both Basic and Enhanced code view.
+A modern, secure rich text editor for Laravel forms, Alpine.js, Tailwind CSS, and Livewire. It stores semantic HTML, ships with its browser assets, provides responsive resizable images and tables, and includes both Basic and Enhanced code view.
 
 ![Visual editor and enhanced HTML code view](docs/images/editor-preview.png)
 
@@ -99,6 +99,8 @@ Both files expose the same API: `create`, `scan`, `destroy`, `getHTML`, `setHTML
 | `profiles.*.images.resize` | `20–100`, step `5` | Controls safe responsive image resizing. |
 | `profiles.*.tables.enabled` | `true` in `standard` | Enables responsive tables and their toolbar. |
 | `profiles.*.tables.palette` | Eight theme tokens | Restricts cell text and background colors. |
+
+Enabled tables can be resized from 20% through 100% without additional configuration. Their canonical `data-rte-width` HTML remains compatible with strict CSP policies.
 
 ## Roadmap
 

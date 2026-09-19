@@ -137,6 +137,14 @@ test('image resize handle persists a responsive width with keyboard controls', a
   await expect(page.locator('.cm-content')).toContainText(/width: \d+%/)
 })
 
+test('image dialog requires alternative text without a decorative option', async ({ page }) => {
+  await mount(page, basic)
+  await page.getByRole('button', { name: 'Add image' }).click()
+
+  await expect(page.getByLabel('Alternative text')).toHaveAttribute('required', '')
+  await expect(page.getByLabel('Decorative image')).toHaveCount(0)
+})
+
 test('table dropdown inserts and edits a canonical table', async ({ page }) => {
   await mount(page, enhanced)
   await page.getByRole('button', { name: 'Table', exact: true }).click()
@@ -171,6 +179,37 @@ test('table dropdown inserts and edits a canonical table', async ({ page }) => {
   await expect(page.locator('.cm-content')).toContainText('<table>')
   await page.getByRole('button', { name: 'HTML code view' }).click()
   await expect(page.getByText('The HTML contains unsupported or unsafe markup.')).toHaveCount(0)
+})
+
+test('table width supports exact values, keyboard resizing, drag, and full width', async ({ page }) => {
+  await mount(page, enhanced)
+  await page.getByRole('button', { name: 'Table', exact: true }).click()
+  await page.getByRole('button', { name: 'Insert 3 × 3 table' }).click()
+
+  await page.getByRole('button', { name: 'Table', exact: true }).click()
+  await page.getByLabel('Table width').selectOption('75')
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/<table data-rte-width="75">/)
+  await page.getByRole('button', { name: 'Table', exact: true }).click()
+
+  const handle = page.getByRole('slider', { name: 'Resize table' })
+  await handle.focus()
+  await expect(handle).toBeFocused()
+  await page.keyboard.press('ArrowLeft')
+  await expect(handle).toHaveAttribute('aria-valuenow', '70')
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/data-rte-width="70"/)
+
+  const box = await handle.boundingBox()
+  expect(box).not.toBeNull()
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(box!.x + box!.width / 2 - 100, box!.y + box!.height / 2)
+  await page.mouse.up()
+  await expect(handle).not.toHaveAttribute('aria-valuenow', '70')
+
+  await page.getByRole('button', { name: 'Table', exact: true }).click()
+  await page.getByRole('button', { name: 'Full width' }).click()
+  await expect(page.locator('[data-rte-input]')).not.toHaveValue(/data-rte-width/)
+  await expect(handle).toHaveAttribute('aria-valuenow', '100')
 })
 
 test('table supports cell selection, merge, split, delete, and keyboard navigation', async ({ page }) => {

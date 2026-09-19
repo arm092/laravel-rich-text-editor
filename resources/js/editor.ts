@@ -210,8 +210,122 @@ function tableCellAttributes(includeScope = false) {
   }
 }
 
+const TABLE_WIDTHS = Array.from({ length: 16 }, (_, index) => 20 + index * 5)
+
 const RestrictedTable = Table.extend({
-  renderHTML() { return ['table', ['tbody', 0]] },
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: null,
+        parseHTML: (element: HTMLElement) => {
+          const width = Number(element.dataset.rteWidth)
+          return TABLE_WIDTHS.includes(width) ? width : null
+        },
+        renderHTML: (attributes: Record<string, unknown>) => TABLE_WIDTHS.includes(Number(attributes.width))
+          ? { 'data-rte-width': String(attributes.width) }
+          : {},
+      },
+    }
+  },
+  renderHTML({ node }) {
+    const attributes = TABLE_WIDTHS.includes(Number(node.attrs.width)) ? { 'data-rte-width': String(node.attrs.width) } : {}
+    return ['table', attributes, ['tbody', 0]]
+  },
+  addNodeView() {
+    return (props) => {
+      let currentNode = props.node
+      let previewWidth = Number(currentNode.attrs.width) || 100
+      let pendingWidth = previewWidth
+      let frame = 0
+      const wrapper = document.createElement('div')
+      wrapper.className = 'tableWrapper rte-resizable-table'
+      const table = document.createElement('table')
+      const body = document.createElement('tbody')
+      const handle = document.createElement('span')
+      handle.className = 'rte-table-resize-handle'
+      handle.contentEditable = 'false'
+      handle.tabIndex = 0
+      handle.setAttribute('role', 'slider')
+      handle.setAttribute('aria-label', 'Resize table')
+      handle.setAttribute('aria-valuemin', '20')
+      handle.setAttribute('aria-valuemax', '100')
+      handle.setAttribute('aria-orientation', 'horizontal')
+      table.append(body)
+      wrapper.append(table, handle)
+
+      const snap = (value: number) => Math.min(100, Math.max(20, Math.round(value / 5) * 5))
+      const renderWidth = (width: number) => {
+        previewWidth = snap(width)
+        pendingWidth = previewWidth
+        if (previewWidth === 100) {
+          delete wrapper.dataset.rteWidth
+          delete table.dataset.rteWidth
+        } else {
+          wrapper.dataset.rteWidth = String(previewWidth)
+          table.dataset.rteWidth = String(previewWidth)
+        }
+        handle.setAttribute('aria-valuenow', String(previewWidth))
+        handle.setAttribute('aria-valuetext', `${previewWidth}% width`)
+      }
+      const commitWidth = (width: number) => {
+        const position = props.getPos()
+        if (typeof position !== 'number' || !props.editor.isEditable) return
+        const next = snap(width)
+        props.view.dispatch(props.view.state.tr.setNodeMarkup(position, undefined, { ...currentNode.attrs, width: next === 100 ? null : next }))
+      }
+
+      handle.addEventListener('pointerdown', (event) => {
+        if (!props.editor.isEditable) return
+        event.preventDefault()
+        const parentWidth = wrapper.parentElement?.getBoundingClientRect().width ?? 0
+        if (parentWidth <= 0) return
+        const startX = event.clientX
+        const startWidth = previewWidth
+        const move = (moveEvent: PointerEvent) => {
+          const next = snap(startWidth + (moveEvent.clientX - startX) / parentWidth * 100)
+          pendingWidth = next
+          cancelAnimationFrame(frame)
+          frame = requestAnimationFrame(() => renderWidth(next))
+        }
+        const finish = () => {
+          cancelAnimationFrame(frame)
+          renderWidth(pendingWidth)
+          commitWidth(pendingWidth)
+          document.removeEventListener('pointermove', move)
+          document.removeEventListener('pointerup', finish)
+          document.removeEventListener('pointercancel', finish)
+        }
+        document.addEventListener('pointermove', move)
+        document.addEventListener('pointerup', finish)
+        document.addEventListener('pointercancel', finish)
+      })
+      handle.addEventListener('keydown', (event) => {
+        const next = event.key === 'ArrowLeft' || event.key === 'ArrowDown' ? previewWidth - 5
+          : event.key === 'ArrowRight' || event.key === 'ArrowUp' ? previewWidth + 5
+            : event.key === 'Home' ? 20 : event.key === 'End' ? 100 : null
+        if (next === null) return
+        event.preventDefault()
+        renderWidth(next)
+        commitWidth(next)
+      })
+      renderWidth(previewWidth)
+
+      return {
+        dom: wrapper,
+        contentDOM: body,
+        update: (node) => {
+          if (node.type !== currentNode.type) return false
+          currentNode = node
+          renderWidth(Number(node.attrs.width) || 100)
+          return true
+        },
+        ignoreMutation: (mutation) => wrapper.contains(mutation.target) && !body.contains(mutation.target),
+        stopEvent: (event) => event.target === handle,
+        destroy: () => cancelAnimationFrame(frame),
+      }
+    }
+  },
 })
 
 const RestrictedTableCell = TableCell.extend({
@@ -532,7 +646,7 @@ export class RichTextEditorController implements PublicEditor {
       ['insert', 'Insert 3 × 3 table'],
       ['row-before', 'Add row before'], ['row-after', 'Add row after'], ['row-delete', 'Delete row'],
       ['column-before', 'Add column before'], ['column-after', 'Add column after'], ['column-delete', 'Delete column'],
-      ['header-row', 'Toggle header row'], ['merge', 'Merge cells'], ['split', 'Split cell'], ['delete', 'Delete table'],
+      ['header-row', 'Toggle header row'], ['merge', 'Merge cells'], ['split', 'Split cell'], ['full-width', 'Full width'], ['delete', 'Delete table'],
     ]
     for (const [action, label] of actions) {
       const button = document.createElement('button')
@@ -545,6 +659,7 @@ export class RichTextEditorController implements PublicEditor {
     }
 
     menu.append(
+      this.createTableWidthSelect(),
       this.createTableSelect('Horizontal alignment', 'horizontalAlign', ['', ...(this.options.tables?.horizontal_alignments ?? [])]),
       this.createTableSelect('Vertical alignment', 'verticalAlign', ['', ...(this.options.tables?.vertical_alignments ?? [])]),
       this.createTableSelect('Text color', 'textColor', ['', ...(this.options.tables?.palette ?? [])]),
@@ -568,6 +683,22 @@ export class RichTextEditorController implements PublicEditor {
     })
     control.append(toggle, menu)
     return control
+  }
+
+  private createTableWidthSelect(): HTMLElement {
+    const field = document.createElement('label')
+    field.className = 'rte-table-field'
+    field.append(document.createTextNode('Table width'))
+    const select = document.createElement('select')
+    select.dataset.rteTableWidth = ''
+    select.setAttribute('aria-label', 'Table width')
+    select.append(new Option('Full width', ''), ...TABLE_WIDTHS.map((width) => new Option(`${width}%`, String(width))))
+    select.addEventListener('change', () => {
+      this.editor.commands.updateAttributes('table', { width: select.value ? Number(select.value) : null })
+      this.refreshTableMenu()
+    })
+    field.append(select)
+    return field
   }
 
   private createColorControl(): HTMLElement {
@@ -668,6 +799,7 @@ export class RichTextEditorController implements PublicEditor {
     else if (action === 'header-row') this.editor.commands.toggleHeaderRow()
     else if (action === 'merge') this.editor.commands.mergeCells()
     else if (action === 'split') this.editor.commands.splitCell()
+    else if (action === 'full-width') this.editor.commands.updateAttributes('table', { width: null })
     else if (action === 'delete') this.editor.commands.deleteTable()
     this.refreshTableMenu()
     this.closeTableMenu()
@@ -691,6 +823,11 @@ export class RichTextEditorController implements PublicEditor {
       select.disabled = !inTable
       select.value = String(attributes[select.dataset.rteCellAttribute!] ?? '')
     })
+    const width = menu.querySelector<HTMLSelectElement>('[data-rte-table-width]')
+    if (width) {
+      width.disabled = !inTable
+      width.value = inTable ? String(this.editor.getAttributes('table').width ?? '') : ''
+    }
   }
 
   private closeTableMenu(): void {
@@ -717,9 +854,8 @@ export class RichTextEditorController implements PublicEditor {
       { name: 'src', label: 'Image URL', value: '', required: true },
       { name: 'alt', label: 'Alternative text', value: '', required: true },
       { name: 'title', label: 'Title', value: '' },
-      { name: 'decorative', label: 'Decorative image', type: 'checkbox', value: '' },
       { name: 'align', label: 'Alignment', type: 'select', value: 'center', options: this.options.images?.alignments ?? ['left', 'center', 'right'] },
-    ], (values) => this.editor.chain().focus().setImage({ src: values.src, alt: values.decorative ? '' : values.alt, title: values.title || undefined, align: values.align } as any).run())
+    ], (values) => this.editor.chain().focus().setImage({ src: values.src, alt: values.alt, title: values.title || undefined, align: values.align } as any).run())
   }
 
   private openDialog(title: string, fields: Array<{ name: string; label: string; value: string; required?: boolean; type?: string; options?: string[] }>, submit: (values: Record<string, string>) => void): void {

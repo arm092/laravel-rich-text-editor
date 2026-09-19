@@ -91,8 +91,28 @@
   .rte-prose img[data-rte-align="left"], .rte-content img[data-rte-align="left"] { display: block; margin-right: auto; }
   .rte-prose img[data-rte-align="center"], .rte-content img[data-rte-align="center"] { display: block; margin-inline: auto; }
   .rte-prose img[data-rte-align="right"], .rte-content img[data-rte-align="right"] { display: block; margin-left: auto; }
-  .rte-prose .tableWrapper { max-width: 100%; overflow-x: auto; }
+  .rte-prose .tableWrapper { position: relative; width: 100%; max-width: 100%; overflow: visible; }
   .rte-prose table, .rte-content table { display: block; width: 100%; max-width: 100%; overflow-x: auto; border-collapse: collapse; border-spacing: 0; }
+  .rte-prose .tableWrapper table { width: 100%; }
+  .rte-prose .tableWrapper[data-rte-width="20"], .rte-content table[data-rte-width="20"] { width: 20%; }
+  .rte-prose .tableWrapper[data-rte-width="25"], .rte-content table[data-rte-width="25"] { width: 25%; }
+  .rte-prose .tableWrapper[data-rte-width="30"], .rte-content table[data-rte-width="30"] { width: 30%; }
+  .rte-prose .tableWrapper[data-rte-width="35"], .rte-content table[data-rte-width="35"] { width: 35%; }
+  .rte-prose .tableWrapper[data-rte-width="40"], .rte-content table[data-rte-width="40"] { width: 40%; }
+  .rte-prose .tableWrapper[data-rte-width="45"], .rte-content table[data-rte-width="45"] { width: 45%; }
+  .rte-prose .tableWrapper[data-rte-width="50"], .rte-content table[data-rte-width="50"] { width: 50%; }
+  .rte-prose .tableWrapper[data-rte-width="55"], .rte-content table[data-rte-width="55"] { width: 55%; }
+  .rte-prose .tableWrapper[data-rte-width="60"], .rte-content table[data-rte-width="60"] { width: 60%; }
+  .rte-prose .tableWrapper[data-rte-width="65"], .rte-content table[data-rte-width="65"] { width: 65%; }
+  .rte-prose .tableWrapper[data-rte-width="70"], .rte-content table[data-rte-width="70"] { width: 70%; }
+  .rte-prose .tableWrapper[data-rte-width="75"], .rte-content table[data-rte-width="75"] { width: 75%; }
+  .rte-prose .tableWrapper[data-rte-width="80"], .rte-content table[data-rte-width="80"] { width: 80%; }
+  .rte-prose .tableWrapper[data-rte-width="85"], .rte-content table[data-rte-width="85"] { width: 85%; }
+  .rte-prose .tableWrapper[data-rte-width="90"], .rte-content table[data-rte-width="90"] { width: 90%; }
+  .rte-prose .tableWrapper[data-rte-width="95"], .rte-content table[data-rte-width="95"] { width: 95%; }
+  .rte-table-resize-handle { position: absolute; z-index: 5; top: 50%; right: -.55rem; width: 1.1rem; height: 2.75rem; border: 2px solid var(--rte-white); border-radius: 999px; background: var(--rte-primary); box-shadow: 0 1px 5px rgba(6, 6, 6, .35); cursor: ew-resize; opacity: 0; transform: translateY(-50%); transition: opacity .14s ease, scale .14s ease; }
+  .rte-resizable-table:hover .rte-table-resize-handle, .rte-resizable-table:focus-within .rte-table-resize-handle { opacity: 1; }
+  .rte-table-resize-handle:focus-visible { opacity: 1; outline: 2px solid var(--rte-info); outline-offset: 2px; scale: 1.06; }
   .rte-prose tbody, .rte-content tbody { display: table; width: 100%; min-width: max-content; border-collapse: collapse; table-layout: auto; }
   .rte-prose th, .rte-prose td, .rte-content th, .rte-content td { min-width: 7rem; border: 1px solid var(--rte-border); padding: .55rem .7rem; text-align: left; vertical-align: top; }
   .rte-prose th, .rte-content th { background: color-mix(in srgb, var(--rte-paper), var(--rte-white) 20%); color: var(--rte-ink); font-weight: 700; }
@@ -151,7 +171,7 @@
   .rte-dialog-cancel { border: 1px solid var(--rte-border); background: var(--rte-white); color: var(--rte-graphite); }
 
   .rich-text-editor--readonly .rte-toolbar { opacity: .6; pointer-events: none; }
-  .rich-text-editor--readonly .rte-image-resize-handle { display: none; }
+  .rich-text-editor--readonly .rte-image-resize-handle, .rich-text-editor--readonly .rte-table-resize-handle { display: none; }
   .rte-content [data-rte-size="small"], .rte-prose [data-rte-size="small"] { font-size: .875rem; }
   .rte-content [data-rte-size="large"], .rte-prose [data-rte-size="large"] { font-size: 1.125rem; }
   .rte-content [data-rte-size="x-large"], .rte-prose [data-rte-size="x-large"] { font-size: 1.25rem; }

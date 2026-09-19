@@ -26,3 +26,7 @@ The public APIs, `code_view.enhanced` option, publish command, and both browser 
 ## Upgrading to 1.2
 
 Version 1.2 adds the Tailwind theme color picker to the default `standard` profile. Existing published profiles remain unchanged until the `colors` toolbar entry and `colors` profile settings are merged or the config is republished with `--force`. Inline code and code blocks are no longer present in the default toolbar as of 1.2.2, but remain available by adding `code` or `codeBlock` to a custom toolbar.
+
+## Upgrading to 1.3
+
+Version 1.3 adds CSP-safe percentage resizing automatically whenever tables are enabled. No config merge is required. Republish JavaScript and CSS assets so the resize handle, exact-width control, `Full width` command, and static `data-rte-width` rules are available. The visual image dialog no longer offers a decorative-image checkbox and requires non-empty alternative text; existing stored images with an explicit empty `alt` remain valid.

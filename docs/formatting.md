@@ -4,7 +4,7 @@ The standard profile includes undo, redo, headings H2–H4, bold, italic, underl
 
 The color picker applies allowlisted Tailwind `text-{color}-500` and `bg-{color}-500` classes to selected text. Each section includes a reset action. Colors survive visual/code-view switching and safe server rendering without permitting arbitrary classes or inline styles.
 
-Links support relative URLs plus HTTP, HTTPS, mailto, and tel by default. Links opened in a new tab receive `noopener noreferrer`. Images accept HTTP or HTTPS URLs, require alternative text or an explicit decorative choice, and support left, center, and right alignment.
+Links support relative URLs plus HTTP, HTTPS, mailto, and tel by default. Links opened in a new tab receive `noopener noreferrer`. Images accept HTTP or HTTPS URLs, require alternative text in the visual insertion dialog, and support left, center, and right alignment. Existing code-view HTML may still use an explicit empty `alt` for a decorative image.
 
 ## Responsive image resizing
 
@@ -18,6 +18,8 @@ File uploads and a media manager remain outside the package scope.
 
 The Table dropdown inserts a 3 × 3 table with one header row and two body rows. When the cursor is in a table, it can add or remove rows and columns, toggle the current row between header and body cells, merge or split selected cells, and delete the table.
 
-The same dropdown controls horizontal and vertical alignment plus allowlisted text and background colors for the selected cell. Reset removes the corresponding attribute. Header cells created by the editor use `scope="col"`.
+The same dropdown controls table width, horizontal and vertical alignment, plus allowlisted text and background colors for the selected cell. Reset removes the corresponding attribute. Header cells created by the editor use `scope="col"`.
+
+Every enabled table can be resized from 20% through 100% in 5% increments by dragging its right-edge handle, using the keyboard, or selecting an exact width. `Full width` restores the responsive default. Reduced widths are stored as a CSP-safe `data-rte-width` attribute; full width omits the attribute.
 
 Use Tab and Shift+Tab to move between cells. Tables scroll horizontally inside their content container on narrow screens instead of widening the page.

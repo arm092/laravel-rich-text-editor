@@ -57,7 +57,7 @@ class RichTextSanitizer
         }
         if ($settings['tables']['enabled'] ?? false) {
             $config = $config
-                ->allowElement('table')
+                ->allowElement('table', ['data-rte-width'])
                 ->allowElement('tbody')
                 ->allowElement('tr')
                 ->allowElement('td', ['colspan', 'rowspan', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color'])
@@ -94,6 +94,7 @@ class RichTextSanitizer
             'a' => ['href', 'title', 'target', 'rel'],
             'img' => ['src', 'alt', 'title', 'data-rte-align', 'style'],
             'span' => ['data-rte-size', 'class'],
+            'table' => ['data-rte-width'],
             'td' => ['colspan', 'rowspan', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color'],
             'th' => ['colspan', 'rowspan', 'scope', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color'],
         ];
@@ -138,6 +139,7 @@ class RichTextSanitizer
             }
         }
         if ($settings['tables']['enabled'] ?? false) {
+            $this->normalizeTableWidths($xpath);
             $this->normalizeTableCells($xpath, $settings);
             $this->normalizeTableStructure($xpath);
         }
@@ -171,6 +173,7 @@ class RichTextSanitizer
             $this->setCanonicalColor($node, 'data-rte-text-color', $node->getAttribute('data-rte-text-color') ?: ($styles['color'] ?? ''), $settings);
             $this->setCanonicalColor($node, 'data-rte-background-color', $node->getAttribute('data-rte-background-color') ?: ($node->getAttribute('bgcolor') ?: ($styles['background-color'] ?? ($styles['background'] ?? ''))), $settings);
         }
+        $this->normalizeTableWidths($xpath);
         $this->normalizeTableCells($xpath, $settings);
 
         return $this->fragmentHtml($document, $root);
@@ -202,6 +205,21 @@ class RichTextSanitizer
                 $this->setCanonicalEnum($node, 'scope', $node->getAttribute('scope'), $tables['scopes'] ?? []);
             } else {
                 $node->removeAttribute('scope');
+            }
+        }
+    }
+
+    private function normalizeTableWidths(DOMXPath $xpath): void
+    {
+        foreach ($xpath->query('//table[@data-rte-width]') ?: [] as $node) {
+            if (! $node instanceof DOMElement) {
+                continue;
+            }
+            $width = filter_var($node->getAttribute('data-rte-width'), FILTER_VALIDATE_INT);
+            if ($width === 100 || $width === false || $width < 20 || $width > 95 || $width % 5 !== 0) {
+                $node->removeAttribute('data-rte-width');
+            } else {
+                $node->setAttribute('data-rte-width', (string) $width);
             }
         }
     }

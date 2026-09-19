@@ -62,3 +62,5 @@ Configure tables inside each profile:
 ```
 
 The `minimal` profile disables tables. Custom profiles may restrict the alignment, scope, span, and palette allowlists further.
+
+Table resizing needs no separate option. When `tables.enabled` is true, widths from 20% through 100% are available in 5% increments through drag, keyboard, and exact-width controls.
