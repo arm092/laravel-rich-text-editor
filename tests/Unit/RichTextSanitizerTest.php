@@ -35,6 +35,16 @@ class RichTextSanitizerTest extends TestCase
         );
     }
 
+    public function test_it_preserves_allowlisted_tailwind_white_utilities(): void
+    {
+        config()->set('rich-text-editor.profiles.standard.colors.palette', ['red', 'white']);
+
+        $this->assertSame(
+            '<p><span class="text-white bg-white">White</span></p>',
+            app(RichTextSanitizer::class)->sanitize('<p><span class="text-white bg-white">White</span></p>'),
+        );
+    }
+
     public function test_it_preserves_cyrillic_and_armenian_text_inside_html(): void
     {
         $html = '<p>Русский Հայերեն</p>';

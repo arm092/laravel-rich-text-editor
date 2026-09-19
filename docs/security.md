@@ -6,7 +6,7 @@ The active profile controls server sanitization. Scripts, event handlers, unsafe
 
 Image uploads use only the explicitly supplied application endpoint. The consuming application must authenticate and authorize the request, validate file content and size, generate safe filenames, store the file outside executable paths, and return a trusted URL. The browser sends the page CSRF token when present, but server-side CSRF verification remains mandatory.
 
-Text spans may retain only `text-{color}-500` and `bg-{color}-500` classes whose color name appears in the active profile. Other classes, arbitrary shades, and inline text styles are removed. This allowlist is enforced identically in browser diagnostics and PHP sanitization.
+Text spans may retain only `text-{color}-500` and `bg-{color}-500` classes whose color name appears in the active profile, plus `text-white` and `bg-white` when `white` is allowlisted. Other classes, arbitrary shades, and inline text styles are removed. This allowlist is enforced identically in browser diagnostics and PHP sanitization.
 
 Paragraphs and allowed headings may retain only an allowlisted `data-rte-text-align` value. Legacy `text-align` declarations are converted to that canonical attribute; arbitrary block styles and unsupported alignment values are removed.
 

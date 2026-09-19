@@ -153,8 +153,13 @@ const RestrictedTextAlign = TextAlign.extend({
 })
 
 function colorName(element: HTMLElement, prefix: 'text' | 'bg'): string | null {
+  if (element.classList.contains(`${prefix}-white`)) return 'white'
   const match = [...element.classList].map((name) => name.match(new RegExp(`^${prefix}-([a-z0-9-]+)-500$`))).find(Boolean)
   return match?.[1] ?? null
+}
+
+function colorClass(prefix: 'text' | 'bg', color: string): string {
+  return color === 'white' ? `${prefix}-white` : `${prefix}-${color}-500`
 }
 
 function restrictedColorMark(name: string, prefix: 'text' | 'bg') {
@@ -170,8 +175,15 @@ function restrictedColorMark(name: string, prefix: 'text' | 'bg') {
         },
       }]
     },
-    renderHTML({ mark }) { return ['span', { class: `${prefix}-${mark.attrs.color}-500` }, 0] },
+    renderHTML({ mark }) { return ['span', { class: colorClass(prefix, mark.attrs.color) }, 0] },
   })
+}
+
+const TEXT_ALIGN_ICONS: Record<string, string> = {
+  left: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 10h11M4 14h16M4 18h9"/></svg>',
+  center: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M6.5 10h11M4 14h16M7.5 18h9"/></svg>',
+  right: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M9 10h11M4 14h16M11 18h9"/></svg>',
+  justify: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>',
 }
 
 const BUTTONS: Record<string, { label: string; icon: string }> = {
@@ -394,6 +406,11 @@ export class RichTextEditorController implements PublicEditor {
   private readonly onRootKeydown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') { this.closeTableMenu(); this.closeColorMenu() }
   }
+  private readonly onDocumentClick = (event: MouseEvent) => {
+    const control = this.toolbar?.querySelector<HTMLElement>('.rte-table-control')
+    if (event.target instanceof Node && control?.contains(event.target)) return
+    this.closeTableMenu()
+  }
 
   constructor(private readonly root: HTMLElement, private readonly codeViewFactory: CodeViewFactory, options: EditorOptions = {}) {
     this.options = { ...this.readOptions(), ...options, codeView: { ...this.readOptions().codeView, ...options.codeView } }
@@ -442,6 +459,7 @@ export class RichTextEditorController implements PublicEditor {
     this.input.addEventListener('change', this.onExternalSync)
     this.root.addEventListener('rte:sync', this.onExternalSync)
     this.root.addEventListener('keydown', this.onRootKeydown, true)
+    document.addEventListener('click', this.onDocumentClick)
     if (this.root.hasAttribute('data-rte-livewire')) document.addEventListener('livewire:navigated', this.onExternalSync)
   }
 
@@ -469,6 +487,7 @@ export class RichTextEditorController implements PublicEditor {
     this.input.removeEventListener('change', this.onExternalSync)
     this.root.removeEventListener('rte:sync', this.onExternalSync)
     this.root.removeEventListener('keydown', this.onRootKeydown, true)
+    document.removeEventListener('click', this.onDocumentClick)
     if (this.root.hasAttribute('data-rte-livewire')) document.removeEventListener('livewire:navigated', this.onExternalSync)
     this.codeView?.destroy()
     this.editor.destroy()
@@ -539,20 +558,30 @@ export class RichTextEditorController implements PublicEditor {
         continue
       }
       if (tool === 'textAlign') {
-        const select = document.createElement('select')
-        select.className = 'rte-select'
-        select.dataset.rteControl = 'textAlign'
-        select.title = 'Text alignment'
-        select.setAttribute('aria-label', 'Text alignment')
+        const group = this.createElement('div', 'rte-text-align-control')
+        group.dataset.rteControl = 'textAlign'
+        group.setAttribute('role', 'group')
+        group.setAttribute('aria-label', 'Text alignment')
         const alignments = this.options.textAlignments ?? ['left', 'center', 'right', 'justify']
-        select.append(new Option('Reset alignment', ''), ...alignments.map((alignment) => new Option(alignment[0].toUpperCase() + alignment.slice(1), alignment)))
-        select.addEventListener('change', () => {
-          const chain = this.editor.chain().focus()
-          if (select.value) chain.setTextAlign(select.value).run()
-          else chain.unsetTextAlign().run()
-          this.refreshToolbar()
-        })
-        this.toolbar.append(select)
+        for (const alignment of alignments) {
+          if (!TEXT_ALIGN_ICONS[alignment]) continue
+          const button = document.createElement('button')
+          button.type = 'button'; button.className = 'rte-button'; button.dataset.rteTextAlign = alignment
+          button.title = `${alignment[0].toUpperCase() + alignment.slice(1)} text`
+          button.setAttribute('aria-label', button.title); button.setAttribute('aria-pressed', 'false')
+          button.innerHTML = TEXT_ALIGN_ICONS[alignment]
+          button.addEventListener('mousedown', (event) => event.preventDefault())
+          button.addEventListener('click', () => { this.editor.chain().focus().setTextAlign(alignment).run(); this.refreshToolbar() })
+          group.append(button)
+        }
+        const reset = document.createElement('button')
+        reset.type = 'button'; reset.className = 'rte-button rte-text-align-reset'; reset.dataset.rteTextAlignReset = ''
+        reset.title = 'Reset text alignment'; reset.setAttribute('aria-label', reset.title)
+        reset.innerHTML = '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m7 7 10 10M17 7 7 17"/></svg>'
+        reset.addEventListener('mousedown', (event) => event.preventDefault())
+        reset.addEventListener('click', () => { this.editor.chain().focus().unsetTextAlign().run(); this.refreshToolbar() })
+        group.append(reset)
+        this.toolbar.append(group)
         continue
       }
       if (tool === 'codeView' && this.options.codeView?.enabled === false) continue
@@ -840,7 +869,7 @@ export class RichTextEditorController implements PublicEditor {
     for (const color of colors) {
       const button = document.createElement('button')
       button.type = 'button'; button.className = 'rte-color-swatch'; button.dataset.rteColor = color.name
-      button.dataset.rteColorMode = mode; button.title = `${label}: ${color.name} 500`; button.setAttribute('aria-label', button.title)
+      button.dataset.rteColorMode = mode; button.title = `${label}: ${color.name}${color.name === 'white' ? '' : ' 500'}`; button.setAttribute('aria-label', button.title)
       button.style.setProperty('--rte-swatch', color.value)
       button.addEventListener('mousedown', (event) => event.preventDefault())
       button.addEventListener('click', () => apply(color.name))
@@ -1044,12 +1073,13 @@ export class RichTextEditorController implements PublicEditor {
       const level = (this.options.headings ?? [2, 3, 4]).find((candidate) => this.editor.isActive('heading', { level: candidate }))
       heading.value = level ? `h${level}` : 'paragraph'
     }
-    const textAlign = this.toolbar.querySelector<HTMLSelectElement>('[data-rte-control="textAlign"]')
-    if (textAlign) {
-      const active = (this.options.textAlignments ?? ['left', 'center', 'right', 'justify'])
-        .find((alignment) => this.editor.isActive({ textAlign: alignment }))
-      textAlign.value = active ?? ''
-    }
+    this.toolbar.querySelectorAll<HTMLButtonElement>('[data-rte-text-align]').forEach((button) => {
+      const alignment = button.dataset.rteTextAlign
+      const isActive = this.editor.getAttributes('paragraph').textAlign === alignment
+        || this.editor.getAttributes('heading').textAlign === alignment
+      button.classList.toggle('is-active', isActive)
+      button.setAttribute('aria-pressed', String(isActive))
+    })
   }
 
   private syncInput(html: string, emit = true): void {

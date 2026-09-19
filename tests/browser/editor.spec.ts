@@ -8,7 +8,7 @@ const styles = resolve('dist/rich-text-editor.css')
 
 async function mount(page: Page, script: string) {
   await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Editor test</title></head><body>
-    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","textAlign","|","bold","italic","link","image","colors","clearFormatting","table","|","codeView"],"headings":[2,3,4],"textAlignments":["left","center","right","justify"],"colors":{"enabled":true,"palette":["red","blue"]},"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
+    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","textAlign","|","bold","italic","link","image","colors","clearFormatting","table","|","codeView"],"headings":[2,3,4],"textAlignments":["left","center","right","justify"],"colors":{"enabled":true,"palette":["red","blue","white"]},"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
       <label for="content">Content</label><textarea id="content" name="content" data-rte-input><h2>Hello</h2><p>Editor content</p><img src="https://example.com/image.jpg" alt="Example"></textarea><div data-rte-mount></div>
     </div></form></main></body></html>`)
   await page.addStyleTag({ path: styles })
@@ -87,9 +87,14 @@ test('text alignment applies to every selected paragraph and heading', async ({ 
   await page.getByText('Hello', { exact: true }).click()
   await page.keyboard.press('Home')
   await page.keyboard.press('Shift+ControlOrMeta+End')
-  await page.getByLabel('Text alignment').selectOption('justify')
+  const justify = page.getByRole('button', { name: 'Justify text' })
+  await justify.click()
 
   await expect(page.locator('[data-rte-input]')).toHaveValue(/<h2 data-rte-text-align="justify">Hello<\/h2><p data-rte-text-align="justify">Editor content<\/p>/)
+  await expect(justify).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'Reset text alignment' }).click()
+  await expect(page.locator('[data-rte-input]')).not.toHaveValue(/data-rte-text-align/)
+  await expect(page.locator('[data-rte-control="textAlign"] select')).toHaveCount(0)
 })
 
 test('list markers remain visible when the host resets list styles', async ({ page }) => {
@@ -125,6 +130,13 @@ test('color picker applies allowlisted Tailwind 500 classes to selected text', a
   await page.getByRole('button', { name: 'Background color: blue 500', exact: true }).click()
 
   await expect(page.locator('[data-rte-input]')).toHaveValue(/<span class="text-red-500"><span class="bg-blue-500">Hello<\/span><\/span>/)
+
+  await page.getByText('Hello', { exact: true }).click()
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Shift+End')
+  await page.locator('[data-rte-command="colors"]').click()
+  await page.getByRole('button', { name: 'Text color: white' }).click()
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/class="text-white"/)
 })
 
 test('image resize handle persists a responsive width with keyboard controls', async ({ page }) => {
@@ -260,6 +272,20 @@ test('table dropdown inserts and edits a canonical table', async ({ page }) => {
   await expect(page.locator('.cm-content')).toContainText('<table')
   await page.getByRole('button', { name: 'HTML code view' }).click()
   await expect(page.getByText('The HTML contains unsupported or unsafe markup.')).toHaveCount(0)
+})
+
+test('table dropdown stays open for inside clicks and closes on outside click', async ({ page }) => {
+  await mount(page, enhanced)
+  await page.getByRole('button', { name: 'Table', exact: true }).click()
+  const menu = page.locator('.rte-table-menu')
+  await expect(menu).toBeVisible()
+
+  await menu.click({ position: { x: 8, y: 8 } })
+  await expect(menu).toBeVisible()
+
+  await page.locator('main').click({ position: { x: 5, y: 5 } })
+  await expect(menu).toBeHidden()
+  await expect(page.getByRole('button', { name: 'Table', exact: true })).toHaveAttribute('aria-expanded', 'false')
 })
 
 test('table tools stay inside the editor when the toolbar wraps', async ({ page }) => {

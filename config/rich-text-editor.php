@@ -41,7 +41,7 @@ return [
                 'palette' => [
                     'slate', 'gray', 'zinc', 'neutral', 'stone', 'mauve', 'olive', 'mist', 'taupe',
                     'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan',
-                    'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose',
+                    'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose', 'white',
                 ],
             ],
             'links' => ['schemes' => ['http', 'https', 'mailto', 'tel'], 'allow_relative' => true],

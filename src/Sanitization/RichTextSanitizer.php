@@ -375,8 +375,10 @@ class RichTextSanitizer
         $canonical = [];
         foreach (['text', 'bg'] as $prefix) {
             foreach ($classes as $class) {
-                if (preg_match('/^'.preg_quote($prefix, '/').'-([a-z0-9-]+)-500$/', $class, $matches) === 1
-                    && in_array($matches[1], $allowed, true)) {
+                $isWhite = $class === $prefix.'-white' && in_array('white', $allowed, true);
+                $isShade = preg_match('/^'.preg_quote($prefix, '/').'-([a-z0-9-]+)-500$/', $class, $matches) === 1
+                    && in_array($matches[1], $allowed, true);
+                if ($isWhite || $isShade) {
                     $canonical[] = $class;
                     break;
                 }

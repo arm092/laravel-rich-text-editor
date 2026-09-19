@@ -33,11 +33,11 @@ Text and background colors use the active profile's Tailwind `500` palette:
 ```php
 'colors' => [
     'enabled' => true,
-    'palette' => ['red', 'orange', 'green', 'blue', 'brand'],
+    'palette' => ['red', 'orange', 'green', 'blue', 'brand', 'white'],
 ],
 ```
 
-The browser shows only palette entries whose `--color-{name}-500` variable is declared by the application's Tailwind theme. If the page declares none of them, the editor falls back to all standard Tailwind `500` colors. The same swatches are used for selected table cells. Add custom names such as `brand` to the profile allowlist so browser and PHP sanitization remain symmetric.
+The browser shows only palette entries whose `--color-{name}-500` variable is declared by the application's Tailwind theme. Allowlisted `white` is always available and uses `text-white` or `bg-white`. If the page declares no theme colors, the editor falls back to all standard Tailwind `500` colors plus white. The same swatches are used for selected table cells. Add custom names such as `brand` to the profile allowlist so browser and PHP sanitization remain symmetric.
 
 Configure responsive image widths inside each profile:
 

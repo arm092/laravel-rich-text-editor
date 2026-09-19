@@ -143,8 +143,8 @@ function validateTableWidth(table: HTMLElement, diagnostics: SourceDiagnostic[])
 function normalizeColorClasses(element: HTMLElement, options: EditorOptions, diagnostics: SourceDiagnostic[]): void {
   const allowed = new Set(options.colors?.enabled === false ? [] : options.colors?.palette ?? [])
   const classes = element.className.trim().split(/\s+/).filter(Boolean)
-  const text = classes.find((name) => name.startsWith('text-') && allowed.has(name.slice(5, -4)) && name.endsWith('-500'))
-  const background = classes.find((name) => name.startsWith('bg-') && allowed.has(name.slice(3, -4)) && name.endsWith('-500'))
+  const text = classes.find((name) => name === 'text-white' ? allowed.has('white') : name.startsWith('text-') && allowed.has(name.slice(5, -4)) && name.endsWith('-500'))
+  const background = classes.find((name) => name === 'bg-white' ? allowed.has('white') : name.startsWith('bg-') && allowed.has(name.slice(3, -4)) && name.endsWith('-500'))
   const canonical = [text, background].filter(Boolean).join(' ')
   if (classes.some((name) => ![text, background].includes(name))) {
     diagnostics.push({ message: 'The text contains an unsupported color or CSS class.', severity: 'warning' })

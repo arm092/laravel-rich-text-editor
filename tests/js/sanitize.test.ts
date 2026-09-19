@@ -15,7 +15,7 @@ const options = {
     palette: ['primary', 'success', 'error', 'info', 'graphite', 'ink', 'paper', 'white'],
   },
   theme: { primary: '#FD971F', success: '#A6E22E', error: '#F92672', info: '#66D9EF', graphite: '#272822', ink: '#060606', paper: '#F8F8F2', white: '#FFFFFF' },
-  colors: { enabled: true, palette: ['red', 'blue', 'brand'] },
+  colors: { enabled: true, palette: ['red', 'blue', 'brand', 'white'] },
 }
 
 describe('HTML sanitization', () => {
@@ -45,6 +45,12 @@ describe('HTML sanitization', () => {
 
     expect(result.html).toBe('<p><span class="text-red-500 bg-blue-500">Colored</span></p>')
     expect(result.changed).toBe(true)
+  })
+
+  it('keeps Tailwind white text and background utilities', () => {
+    const result = sanitizeHtml('<p><span class="text-white bg-white">White</span></p>', options)
+
+    expect(result.html).toBe('<p><span class="text-white bg-white">White</span></p>')
   })
 
   it('validates image URLs, alt text, and alignment', () => {

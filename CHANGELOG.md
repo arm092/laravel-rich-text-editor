@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Add the Tailwind `white` color to the default text, background, and table-cell color pickers using canonical `text-white` and `bg-white` utilities.
+
+### Changed
+
+- Replace the text-alignment select with left, center, right, justify, and reset icon buttons.
+
+### Fixed
+
+- Close the table tools popup when the user clicks outside it while preserving interactions inside the popup.
+
 ## [1.3.5] - 2026-09-19
 
 ### Added

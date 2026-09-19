@@ -2,9 +2,9 @@
 
 The standard profile includes undo, redo, headings H2–H4, bold, italic, underline, strikethrough, lists, blockquotes, horizontal rules, links, URL images, text and background colors, tables, clear formatting, and code view. Inline code and code blocks remain available as the `code` and `codeBlock` toolbar entries for custom profiles but are disabled by default.
 
-The color picker applies allowlisted Tailwind `text-{color}-500` and `bg-{color}-500` classes to selected text. Each section includes a reset action. Colors survive visual/code-view switching and safe server rendering without permitting arbitrary classes or inline styles.
+The color picker applies allowlisted Tailwind `text-{color}-500` and `bg-{color}-500` classes to selected text. White uses Tailwind's canonical `text-white` and `bg-white` utilities because it has no `500` shade. Each section includes a reset action. Colors survive visual/code-view switching and safe server rendering without permitting arbitrary classes or inline styles.
 
-The `Text alignment` control applies left, center, right, justified, or reset alignment to paragraphs and headings. A selection inside one block aligns that whole block; a selection spanning multiple blocks aligns every selected paragraph and heading. Canonical HTML uses `data-rte-text-align` rather than inline styles.
+The `Text alignment` icon group applies left, center, right, justified, or reset alignment to paragraphs and headings. The active alignment is highlighted, and every icon has a tooltip and accessible label. A selection inside one block aligns that whole block; a selection spanning multiple blocks aligns every selected paragraph and heading. Canonical HTML uses `data-rte-text-align` rather than inline styles.
 
 Links support relative URLs plus HTTP, HTTPS, mailto, and tel by default. Links opened in a new tab receive `noopener noreferrer`. Images accept HTTP or HTTPS URLs, require alternative text in the visual insertion dialog, and support left, center, and right alignment. Existing code-view HTML may still use an explicit empty `alt` for a decorative image.
 
@@ -24,7 +24,7 @@ File uploads and a media manager remain outside the package scope.
 
 ## Tables
 
-The Table dropdown inserts either a 3 × 3 or 4 × 4 table. Both options create one header row; the remaining rows use body cells. When the cursor is in a table, it can add or remove rows and columns, toggle the current row between header and body cells, merge or split selected cells, and delete the table.
+The Table dropdown inserts either a 3 × 3 or 4 × 4 table. Both options create one header row; the remaining rows use body cells. When the cursor is in a table, it can add or remove rows and columns, toggle the current row between header and body cells, merge or split selected cells, and delete the table. Escape or a click outside the popup closes it; interactions inside it keep it open until an action is applied.
 
 The same dropdown controls table width and whole-table horizontal alignment. The controls labelled `Text horizontal alignment` and `Text vertical alignment` affect content inside the selected cell, not the table itself. Cell text and background colors use the same Tailwind `500` swatch dialog and active profile palette as the main color picker. Reset removes the corresponding attribute. Header cells created by the editor use `scope="col"`.
 

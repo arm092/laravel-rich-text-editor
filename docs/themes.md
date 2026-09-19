@@ -13,9 +13,9 @@ The same values may be changed in the published PHP config, which applies variab
 
 ## Tailwind color picker
 
-The standard profile detects `--color-*-500` variables declared by the host application's Tailwind theme and offers only those colors. When no matching theme variables exist, the complete standard Tailwind `500` palette is available through package CSS fallbacks.
+The standard profile detects `--color-*-500` variables declared by the host application's Tailwind theme and offers only those colors, plus white when it is allowlisted. When no matching theme variables exist, the complete standard Tailwind `500` palette and white are available through package CSS fallbacks.
 
-Saved HTML uses `text-{color}-500` and `bg-{color}-500` classes. For a custom color such as `brand`, add `brand` to `profiles.*.colors.palette` and ensure Tailwind emits the corresponding utilities. With Tailwind CSS 4, include the package templates or your integration file as an `@source` when the utilities are not otherwise discoverable:
+Saved HTML uses `text-{color}-500` and `bg-{color}-500` classes; white uses `text-white` and `bg-white`. For a custom color such as `brand`, add `brand` to `profiles.*.colors.palette` and ensure Tailwind emits the corresponding utilities. With Tailwind CSS 4, include the package templates or your integration file as an `@source` when the utilities are not otherwise discoverable:
 
 ```css
 @source "../../vendor/arm092/laravel-rich-text-editor/resources/views/**/*.blade.php";

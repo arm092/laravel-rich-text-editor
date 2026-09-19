@@ -36,6 +36,9 @@
   .rte-button.is-active { border-color: color-mix(in srgb, var(--rte-primary), transparent 55%); background: color-mix(in srgb, var(--rte-primary), transparent 84%); color: var(--rte-ink); }
   .rte-button[data-rte-command="codeView"] { width: auto; padding-inline: .45rem; font-size: .68rem; font-weight: 750; letter-spacing: .02em; }
   .rte-select { width: auto; padding: 0 1.75rem 0 .65rem; }
+  .rte-text-align-control { display: inline-flex; align-items: center; gap: .1rem; padding: .1rem; border: 1px solid var(--rte-border); border-radius: .6rem; background: color-mix(in srgb, var(--rte-paper), transparent 48%); }
+  .rte-text-align-control .rte-button { min-width: 1.9rem; width: 1.9rem; height: 1.9rem; }
+  .rte-text-align-reset { margin-left: .1rem; border-left-color: var(--rte-border); color: color-mix(in srgb, var(--rte-graphite), transparent 18%); }
   .rte-table-control { position: relative; }
   .rte-table-menu { position: absolute; z-index: 30; top: calc(100% + .4rem); right: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .35rem; width: min(26rem, calc(100vw - 2rem)); max-height: min(32rem, 70vh); overflow-y: auto; border: 1px solid var(--rte-border); border-radius: .75rem; padding: .65rem; background: var(--rte-white); box-shadow: 0 18px 50px rgba(6, 6, 6, .2); }
   .rte-table-menu[hidden] { display: none; }
@@ -266,6 +269,7 @@
   :is(.rte-prose, .rte-content) .text-fuchsia-500 { color: var(--color-fuchsia-500, #e12afb); }
   :is(.rte-prose, .rte-content) .text-pink-500 { color: var(--color-pink-500, #f6339a); }
   :is(.rte-prose, .rte-content) .text-rose-500 { color: var(--color-rose-500, #ff2357); }
+  :is(.rte-prose, .rte-content) .text-white { color: #fff; }
 
   :is(.rte-prose, .rte-content) [class~="bg-slate-500"] { background-color: var(--color-slate-500, #62748e); }
   :is(.rte-prose, .rte-content) [class~="bg-gray-500"] { background-color: var(--color-gray-500, #6a7282); }
@@ -293,6 +297,7 @@
   :is(.rte-prose, .rte-content) [class~="bg-fuchsia-500"] { background-color: var(--color-fuchsia-500, #e12afb); }
   :is(.rte-prose, .rte-content) [class~="bg-pink-500"] { background-color: var(--color-pink-500, #f6339a); }
   :is(.rte-prose, .rte-content) [class~="bg-rose-500"] { background-color: var(--color-rose-500, #ff2357); }
+  :is(.rte-prose, .rte-content) [class~="bg-white"] { background-color: #fff; }
 
   @media (max-width: 640px) {
     .rte-toolbar { gap: .15rem; padding: .4rem; }

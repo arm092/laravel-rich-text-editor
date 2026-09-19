@@ -29,6 +29,10 @@ describe('editor controller', () => {
     document.documentElement.style.removeProperty('--color-private-500')
   })
 
+  it('keeps white available without a 500 shade variable', () => {
+    expect(resolveTailwind500Colors(['red', 'white'])).toContainEqual({ name: 'white', value: '#ffffff' })
+  })
+
   it('renders the color picker from the active profile', () => {
     const root = fixture()
     root.dataset.rteOptions = JSON.stringify({
