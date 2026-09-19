@@ -47,7 +47,7 @@ The editor sends a multipart `POST` request with an `image` field, same-origin c
 {"url":"/storage/editor/example.webp"}
 ```
 
-The endpoint, validation, authorization, storage, and cleanup remain application responsibilities. Without `image-upload-url`, the dialog uses Image URL. Both modes require non-empty alternative text for new images.
+Application-relative upload responses are normalized to an absolute URL using the upload endpoint origin before insertion. The endpoint, validation, authorization, storage, and cleanup remain application responsibilities. Without `image-upload-url`, the dialog uses Image URL. Both modes require non-empty alternative text for new images.
 
 The submitted `content` value is HTML. For safe persistence, add the package cast:
 

@@ -171,7 +171,7 @@ test('image dialog uploads a selected file on Apply and inserts the returned URL
   await page.getByLabel('Image file').setInputFiles({ name: 'example.png', mimeType: 'image/png', buffer: Buffer.from('png') })
   await page.getByLabel('Alternative text').fill('Uploaded example')
   await page.getByRole('button', { name: 'Apply' }).click()
-  await expect(page.locator('.ProseMirror img[alt="Uploaded example"]')).toHaveAttribute('src', '/storage/example.png')
+  await expect(page.locator('.ProseMirror img[alt="Uploaded example"]')).toHaveAttribute('src', 'https://example.test/storage/example.png')
 })
 
 test('image upload shows Laravel validation errors and allows retry', async ({ page }) => {
@@ -198,7 +198,7 @@ test('image upload shows Laravel validation errors and allows retry', async ({ p
   await page.getByRole('button', { name: 'Apply' }).click()
   await expect(page.getByRole('alert')).toHaveText('The image must be a file of type: jpeg, png, webp.')
   await page.getByRole('button', { name: 'Apply' }).click()
-  await expect(page.locator('.ProseMirror img[alt="Retry example"]')).toHaveAttribute('src', '/storage/retry.png')
+  await expect(page.locator('.ProseMirror img[alt="Retry example"]')).toHaveAttribute('src', 'https://example.test/storage/retry.png')
 })
 
 test('table dropdown inserts and edits a canonical table', async ({ page }) => {

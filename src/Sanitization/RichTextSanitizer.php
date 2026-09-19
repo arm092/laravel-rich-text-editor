@@ -71,7 +71,7 @@ class RichTextSanitizer
             ->allowLinkSchemes($settings['links']['schemes'] ?? ['http', 'https'])
             ->allowRelativeLinks((bool) ($settings['links']['allow_relative'] ?? false))
             ->allowMediaSchemes($settings['images']['schemes'] ?? ['http', 'https'])
-            ->allowRelativeMedias(false)
+            ->allowRelativeMedias((bool) ($settings['images']['allow_relative'] ?? false))
             ->forceAttribute('a', 'rel', 'noopener noreferrer');
     }
 
@@ -113,6 +113,9 @@ class RichTextSanitizer
             }
         }
         foreach ($xpath->query('//img[not(@alt)]') ?: [] as $node) {
+            $node->parentNode?->removeChild($node);
+        }
+        foreach ($xpath->query('//img[not(@src)]') ?: [] as $node) {
             $node->parentNode?->removeChild($node);
         }
         foreach ($xpath->query('//img[@style]') ?: [] as $node) {

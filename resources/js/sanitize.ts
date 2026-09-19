@@ -67,8 +67,8 @@ export function sanitizeHtml(source: string, options: EditorOptions): SanitizeRe
 
     if (tag === 'img') {
       const sourceUrl = element.getAttribute('src') ?? ''
-      if (!isAllowedUrl(sourceUrl, options.images?.schemes ?? ['http', 'https'], false)) {
-        diagnostics.push({ message: 'The image URL must use HTTP or HTTPS.', severity: 'error' })
+      if (!isAllowedUrl(sourceUrl, options.images?.schemes ?? ['http', 'https'], options.images?.allow_relative ?? false)) {
+        diagnostics.push({ message: 'The image URL is relative or uses an unsupported scheme.', severity: 'error' })
         element.remove()
         continue
       }

@@ -877,7 +877,7 @@ export class RichTextEditorController implements PublicEditor {
       throw new Error(String(message))
     }
     if (typeof payload?.url !== 'string' || payload.url.trim() === '') throw new Error('The upload response does not contain an image URL.')
-    return payload.url
+    return new URL(payload.url, response.url).href
   }
 
   private openDialog(title: string, fields: Array<{ name: string; label: string; value: string; required?: boolean; type?: string; options?: string[]; accept?: string }>, submit: (values: Record<string, string | File>) => void | Promise<void>): void {

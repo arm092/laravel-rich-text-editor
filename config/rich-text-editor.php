@@ -46,6 +46,7 @@ return [
             'links' => ['schemes' => ['http', 'https', 'mailto', 'tel'], 'allow_relative' => true],
             'images' => [
                 'schemes' => ['http', 'https'],
+                'allow_relative' => false,
                 'alignments' => ['left', 'center', 'right'],
                 'resize' => ['enabled' => true, 'min' => 20, 'max' => 100, 'step' => 5],
             ],
@@ -70,6 +71,7 @@ return [
             'links' => ['schemes' => ['http', 'https', 'mailto', 'tel'], 'allow_relative' => true],
             'images' => [
                 'schemes' => ['http', 'https'],
+                'allow_relative' => false,
                 'alignments' => ['left', 'center', 'right'],
                 'resize' => ['enabled' => true, 'min' => 20, 'max' => 100, 'step' => 5],
             ],

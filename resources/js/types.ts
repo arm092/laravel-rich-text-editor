@@ -24,6 +24,7 @@ export type EditorOptions = {
   images?: {
     schemes?: string[]
     alignments?: string[]
+    allow_relative?: boolean
     upload_url?: string
     resize?: { enabled?: boolean; min?: number; max?: number; step?: number }
   }

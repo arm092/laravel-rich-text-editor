@@ -60,6 +60,20 @@ class RichTextSanitizerTest extends TestCase
         $this->assertSame('<p>Before</p><p>After</p>', $sanitized);
     }
 
+    public function test_it_preserves_relative_image_urls_only_when_the_profile_allows_them(): void
+    {
+        config()->set('rich-text-editor.profiles.standard.images.allow_relative', true);
+        $this->app->forgetInstance(RichTextSanitizer::class);
+        $allowed = app(RichTextSanitizer::class)->sanitize('<img src="/storage/example.png" alt="Example">');
+
+        config()->set('rich-text-editor.profiles.standard.images.allow_relative', false);
+        $this->app->forgetInstance(RichTextSanitizer::class);
+        $blocked = app(RichTextSanitizer::class)->sanitize('<img src="/storage/example.png" alt="Example">');
+
+        $this->assertSame('<img src="/storage/example.png" alt="Example">', $allowed);
+        $this->assertSame('', $blocked);
+    }
+
     public function test_it_allows_only_profile_constrained_responsive_image_widths(): void
     {
         $sanitizer = app(RichTextSanitizer::class);

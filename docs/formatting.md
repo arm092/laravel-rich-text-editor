@@ -8,7 +8,7 @@ Links support relative URLs plus HTTP, HTTPS, mailto, and tel by default. Links 
 
 ## Image uploads
 
-Pass `image-upload-url` to the Blade component to replace the URL field with a JPEG, PNG, or WebP file field. The editor uploads only when the user presses Apply. It sends multipart form data under the `image` key with same-origin credentials and uses the CSRF token from the page meta tag. The endpoint must return JSON with a non-empty `url`; absolute URLs and application-relative paths such as `/storage/image.webp` are supported.
+Pass `image-upload-url` to the Blade component to replace the URL field with a JPEG, PNG, or WebP file field. The editor uploads only when the user presses Apply. It sends multipart form data under the `image` key with same-origin credentials and uses the CSRF token from the page meta tag. The endpoint must return JSON with a non-empty `url`; absolute URLs and application-relative paths such as `/storage/image.webp` are supported. Relative upload responses are normalized against the upload endpoint origin before insertion.
 
 Laravel `422` responses may return `errors.image[0]`; other failures may return `message`. Network failures, malformed JSON, unsuccessful HTTP responses, and missing URLs remain visible in the dialog so the user can retry. The package intentionally provides no storage driver, file manager, route, controller, or database model.
 

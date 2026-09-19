@@ -48,6 +48,17 @@ describe('HTML sanitization', () => {
     expect(result.diagnostics.some((diagnostic) => diagnostic.severity === 'error')).toBe(true)
   })
 
+  it('preserves relative image URLs only when explicitly allowed', () => {
+    const allowed = sanitizeHtml('<img src="/storage/example.png" alt="Example">', {
+      ...options,
+      images: { ...options.images, allow_relative: true },
+    })
+    const blocked = sanitizeHtml('<img src="/storage/example.png" alt="Example">', options)
+
+    expect(allowed.html).toBe('<img src="/storage/example.png" alt="Example">')
+    expect(blocked.html).toBe('')
+  })
+
   it('canonicalizes allowed responsive image widths and removes arbitrary styles', () => {
     const allowed = sanitizeHtml('<img src="https://example.com/a.jpg" alt="A" style="width:60%">', options)
     const blocked = sanitizeHtml('<img src="https://example.com/a.jpg" alt="A" style="width:61%;color:red">', options)

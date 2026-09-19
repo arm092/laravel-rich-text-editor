@@ -35,6 +35,8 @@ Configure responsive image widths inside each profile:
 
 ```php
 'images' => [
+    // Keep false unless stored HTML intentionally uses relative image URLs.
+    'allow_relative' => false,
     'schemes' => ['http', 'https'],
     'alignments' => ['left', 'center', 'right'],
     'resize' => [

@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-09-19
+
+### Fixed
+
+- Normalize application-relative upload responses against the upload endpoint origin before inserting them, keeping uploaded images stable through client and server sanitization.
+- Add a symmetric `images.allow_relative` policy to the browser and PHP sanitizers for applications that intentionally store relative image URLs.
+
 ## [1.3.1] - 2026-09-19
 
 ### Added
