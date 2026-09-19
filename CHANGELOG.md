@@ -4,15 +4,22 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.5] - 2026-09-19
+
 ### Added
 
 - Add 4 × 4 table insertion and left, center, or right alignment for reduced-width tables.
+- Add profile-controlled left, center, right, and justified text alignment for selected paragraphs and headings.
 
 ### Changed
 
 - Clarify that horizontal and vertical alignment controls affect text inside the selected cell.
 - Use the same Tailwind `500` swatch dialog and active profile palette for ordinary text and table-cell colors.
 - Remove the duplicate `Full width` action; full width remains available in the table-width selector.
+
+### Fixed
+
+- Center the image and clear-formatting SVG icons inside their toolbar buttons.
 
 ## [1.3.4] - 2026-09-19
 
@@ -184,7 +191,12 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.5...HEAD
+[1.3.5]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.4...v1.3.5
+[1.3.4]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.3...v1.3.4
+[1.3.3]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.2...v1.3.3
+[1.3.2]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.1...v1.3.2
+[1.3.1]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.2.0...v1.2.1

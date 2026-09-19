@@ -8,6 +8,16 @@ use InvalidArgumentException;
 
 class RichTextSanitizerTest extends TestCase
 {
+    public function test_it_canonicalizes_safe_block_text_alignment_without_inline_styles(): void
+    {
+        $html = '<h2 style="text-align: CENTER">Heading</h2><p data-rte-text-align="justify">Body</p><p data-rte-text-align="wide">Invalid</p>';
+        $this->assertSame(['left', 'center', 'right', 'justify'], config('rich-text-editor.profiles.standard.text_alignments'));
+
+        $this->assertSame(
+            '<h2 data-rte-text-align="center">Heading</h2><p data-rte-text-align="justify">Body</p><p>Invalid</p>',
+            app(RichTextSanitizer::class)->sanitize($html),
+        );
+    }
     public function test_it_preserves_supported_semantic_html(): void
     {
         $html = '<h2>Title</h2><p>Hello <strong>world</strong>.</p><ul><li>One</li></ul>';

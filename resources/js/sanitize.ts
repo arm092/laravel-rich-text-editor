@@ -6,6 +6,9 @@ const BASE_TAGS = new Set([
 const TABLE_TAGS = ['table', 'tbody', 'tr', 'th', 'td']
 
 const ATTRIBUTES: Record<string, Set<string>> = {
+  p: new Set(['data-rte-text-align']),
+  h1: new Set(['data-rte-text-align']), h2: new Set(['data-rte-text-align']), h3: new Set(['data-rte-text-align']),
+  h4: new Set(['data-rte-text-align']), h5: new Set(['data-rte-text-align']), h6: new Set(['data-rte-text-align']),
   table: new Set(['data-rte-width', 'data-rte-table-align']),
   a: new Set(['href', 'title', 'target', 'rel']),
   img: new Set(['src', 'alt', 'title', 'data-rte-align', 'style']),
@@ -40,6 +43,7 @@ export function sanitizeHtml(source: string, options: EditorOptions): SanitizeRe
     diagnostics.push({ message: 'Tables are not allowed by this profile.', severity: 'warning' })
     table.remove()
   }
+  normalizeBlockTextAlignInput(root, options)
 
   for (const element of [...root.querySelectorAll<HTMLElement>('*')]) {
     const tag = element.tagName.toLowerCase()
@@ -97,6 +101,9 @@ export function sanitizeHtml(source: string, options: EditorOptions): SanitizeRe
     }
 
     if (tag === 'span') normalizeColorClasses(element, options, diagnostics)
+    if (tag === 'p' || headings.has(tag)) {
+      setCanonicalEnum(element, 'data-rte-text-align', element.dataset.rteTextAlign ?? '', options.textAlignments ?? [])
+    }
 
     if (tag === 'table') {
       validateTableWidth(element, diagnostics)
@@ -107,6 +114,15 @@ export function sanitizeHtml(source: string, options: EditorOptions): SanitizeRe
 
   const html = normalizeEmpty(root.innerHTML)
   return { html, changed: normalizeComparison(source) !== normalizeComparison(html), diagnostics }
+}
+
+function normalizeBlockTextAlignInput(root: HTMLElement, options: EditorOptions): void {
+  const headings = new Set((options.headings ?? [2, 3, 4]).map((level) => `h${level}`))
+  for (const block of [...root.querySelectorAll<HTMLElement>('p,h1,h2,h3,h4,h5,h6')]) {
+    if (block.tagName.toLowerCase() !== 'p' && !headings.has(block.tagName.toLowerCase())) continue
+    const styles = styleDeclarations(block.getAttribute('style') ?? '')
+    setCanonicalEnum(block, 'data-rte-text-align', block.dataset.rteTextAlign || styles['text-align'] || '', options.textAlignments ?? [])
+  }
 }
 
 function validateTableWidth(table: HTMLElement, diagnostics: SourceDiagnostic[]): void {

@@ -1,5 +1,9 @@
 # Upgrading
 
+## Version 1.3.5
+
+Republish assets to receive the table controls, centered SVG toolbar icons, and text alignment. Existing published configuration must add `textAlign` to the desired toolbar and define `text_alignments` to expose left, center, right, and justified alignment. Full configuration republishing still requires `rich-text-editor:publish --force`.
+
 Read `CHANGELOG.md`, update Composer, then republish assets:
 
 ```bash

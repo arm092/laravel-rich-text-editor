@@ -29,12 +29,13 @@ return [
         'standard' => [
             'headings' => [2, 3, 4],
             'toolbar' => [
-                'undo', 'redo', '|', 'heading', '|', 'bold', 'italic', 'underline', 'strike',
+                'undo', 'redo', '|', 'heading', 'textAlign', '|', 'bold', 'italic', 'underline', 'strike',
                 '|', 'bulletList', 'orderedList', 'blockquote', 'horizontalRule',
                 '|', 'link', 'image', 'colors', 'clearFormatting', '|', 'codeView',
                 '|', 'table',
             ],
             'font_sizes' => [],
+            'text_alignments' => ['left', 'center', 'right', 'justify'],
             'colors' => [
                 'enabled' => true,
                 'palette' => [
@@ -67,6 +68,7 @@ return [
                 'bulletList', 'orderedList', '|', 'link', 'image', '|', 'codeView',
             ],
             'font_sizes' => [],
+            'text_alignments' => [],
             'colors' => ['enabled' => false, 'palette' => []],
             'links' => ['schemes' => ['http', 'https', 'mailto', 'tel'], 'allow_relative' => true],
             'images' => [

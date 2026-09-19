@@ -4,6 +4,8 @@ The standard profile includes undo, redo, headings H2–H4, bold, italic, underl
 
 The color picker applies allowlisted Tailwind `text-{color}-500` and `bg-{color}-500` classes to selected text. Each section includes a reset action. Colors survive visual/code-view switching and safe server rendering without permitting arbitrary classes or inline styles.
 
+The `Text alignment` control applies left, center, right, justified, or reset alignment to paragraphs and headings. A selection inside one block aligns that whole block; a selection spanning multiple blocks aligns every selected paragraph and heading. Canonical HTML uses `data-rte-text-align` rather than inline styles.
+
 Links support relative URLs plus HTTP, HTTPS, mailto, and tel by default. Links opened in a new tab receive `noopener noreferrer`. Images accept HTTP or HTTPS URLs, require alternative text in the visual insertion dialog, and support left, center, and right alignment. Existing code-view HTML may still use an explicit empty `alt` for a decorative image.
 
 ## Image uploads

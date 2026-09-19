@@ -18,6 +18,7 @@ export type EditorOptions = {
   minHeight?: string
   toolbar?: string[]
   headings?: number[]
+  textAlignments?: string[]
   fontSizes?: Record<string, string>
   colors?: { enabled?: boolean; palette?: string[] }
   links?: { schemes?: string[]; allow_relative?: boolean }

@@ -111,6 +111,7 @@ Both files expose the same API: `create`, `scan`, `destroy`, `getHTML`, `setHTML
 | `code_view.enhanced` | `true` | Loads the enhanced or basic browser bundle. |
 | `assets.auto` | `true` | Lets the Blade component include published assets once. |
 | `profiles.*.headings` | `[2, 3, 4]` | Restricts heading levels. |
+| `profiles.*.text_alignments` | Left, center, right, justify | Enables CSP-safe block text alignment. |
 | `profiles.*.font_sizes` | `[]` | Enables only named, allowlisted text sizes. |
 | `profiles.*.colors` | Tailwind `500` palette | Enables allowlisted text and background colors. |
 | `profiles.*.images.resize` | `20–100`, step `5` | Controls safe responsive image resizing. |

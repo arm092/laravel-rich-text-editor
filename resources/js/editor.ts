@@ -5,6 +5,7 @@ import { TableCell } from '@tiptap/extension-table/cell'
 import { TableHeader } from '@tiptap/extension-table/header'
 import { TableRow } from '@tiptap/extension-table/row'
 import { TextStyle } from '@tiptap/extension-text-style'
+import { TextAlign } from '@tiptap/extension-text-align'
 import StarterKit from '@tiptap/starter-kit'
 import { resolveTailwind500Colors } from './colors'
 import { normalizeEmpty, sanitizeHtml } from './sanitize'
@@ -127,6 +128,24 @@ const RestrictedTextSize = Extension.create({
           default: null,
           parseHTML: (element) => element.getAttribute('data-rte-size'),
           renderHTML: (attributes) => attributes.rteSize ? { 'data-rte-size': attributes.rteSize } : {},
+        },
+      },
+    }]
+  },
+})
+
+const RestrictedTextAlign = TextAlign.extend({
+  addGlobalAttributes() {
+    return [{
+      types: this.options.types,
+      attributes: {
+        textAlign: {
+          default: this.options.defaultAlignment,
+          parseHTML: (element) => {
+            const alignment = element.getAttribute('data-rte-text-align') || element.style.textAlign
+            return this.options.alignments.includes(alignment) ? alignment : this.options.defaultAlignment
+          },
+          renderHTML: (attributes) => attributes.textAlign ? { 'data-rte-text-align': attributes.textAlign } : {},
         },
       },
     }]
@@ -484,6 +503,10 @@ export class RichTextEditorController implements PublicEditor {
       createAlignedImage(this.options.images?.resize).configure({ inline: false, allowBase64: false }),
       TextStyle,
       RestrictedTextSize,
+      RestrictedTextAlign.configure({
+        types: ['heading', 'paragraph'],
+        alignments: this.options.textAlignments ?? ['left', 'center', 'right', 'justify'],
+      }),
       restrictedColorMark('restrictedTextColor', 'text'),
       restrictedColorMark('restrictedBackgroundColor', 'bg'),
     ]
@@ -511,6 +534,23 @@ export class RichTextEditorController implements PublicEditor {
         select.addEventListener('change', () => {
           if (select.value === 'paragraph') this.editor.chain().focus().setParagraph().run()
           else this.editor.chain().focus().setHeading({ level: Number(select.value.slice(1)) as 1 | 2 | 3 | 4 | 5 | 6 }).run()
+        })
+        this.toolbar.append(select)
+        continue
+      }
+      if (tool === 'textAlign') {
+        const select = document.createElement('select')
+        select.className = 'rte-select'
+        select.dataset.rteControl = 'textAlign'
+        select.title = 'Text alignment'
+        select.setAttribute('aria-label', 'Text alignment')
+        const alignments = this.options.textAlignments ?? ['left', 'center', 'right', 'justify']
+        select.append(new Option('Reset alignment', ''), ...alignments.map((alignment) => new Option(alignment[0].toUpperCase() + alignment.slice(1), alignment)))
+        select.addEventListener('change', () => {
+          const chain = this.editor.chain().focus()
+          if (select.value) chain.setTextAlign(select.value).run()
+          else chain.unsetTextAlign().run()
+          this.refreshToolbar()
         })
         this.toolbar.append(select)
         continue
@@ -1003,6 +1043,12 @@ export class RichTextEditorController implements PublicEditor {
     if (heading) {
       const level = (this.options.headings ?? [2, 3, 4]).find((candidate) => this.editor.isActive('heading', { level: candidate }))
       heading.value = level ? `h${level}` : 'paragraph'
+    }
+    const textAlign = this.toolbar.querySelector<HTMLSelectElement>('[data-rte-control="textAlign"]')
+    if (textAlign) {
+      const active = (this.options.textAlignments ?? ['left', 'center', 'right', 'justify'])
+        .find((alignment) => this.editor.isActive({ textAlign: alignment }))
+      textAlign.value = active ?? ''
     }
   }
 

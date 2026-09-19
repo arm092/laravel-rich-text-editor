@@ -13,6 +13,8 @@ class ConfigurationDefaultsTest extends TestCase
 
         $this->assertTrue($standard['colors']['enabled']);
         $this->assertContains('colors', $standard['toolbar']);
+        $this->assertContains('textAlign', $standard['toolbar']);
+        $this->assertSame(['left', 'center', 'right', 'justify'], $standard['text_alignments']);
         $this->assertNotContains('code', $standard['toolbar']);
         $this->assertNotContains('codeBlock', $standard['toolbar']);
     }

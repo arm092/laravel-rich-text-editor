@@ -8,7 +8,7 @@ const styles = resolve('dist/rich-text-editor.css')
 
 async function mount(page: Page, script: string) {
   await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Editor test</title></head><body>
-    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","|","bold","italic","link","image","colors","clearFormatting","table","|","codeView"],"headings":[2,3,4],"colors":{"enabled":true,"palette":["red","blue"]},"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
+    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","textAlign","|","bold","italic","link","image","colors","clearFormatting","table","|","codeView"],"headings":[2,3,4],"textAlignments":["left","center","right","justify"],"colors":{"enabled":true,"palette":["red","blue"]},"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
       <label for="content">Content</label><textarea id="content" name="content" data-rte-input><h2>Hello</h2><p>Editor content</p><img src="https://example.com/image.jpg" alt="Example"></textarea><div data-rte-mount></div>
     </div></form></main></body></html>`)
   await page.addStyleTag({ path: styles })
@@ -82,6 +82,16 @@ test('text style control follows the block at the current selection', async ({ p
   await expect(style).toHaveValue('paragraph')
 })
 
+test('text alignment applies to every selected paragraph and heading', async ({ page }) => {
+  await mount(page, enhanced)
+  await page.getByText('Hello', { exact: true }).click()
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Shift+ControlOrMeta+End')
+  await page.getByLabel('Text alignment').selectOption('justify')
+
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/<h2 data-rte-text-align="justify">Hello<\/h2><p data-rte-text-align="justify">Editor content<\/p>/)
+})
+
 test('list markers remain visible when the host resets list styles', async ({ page }) => {
   await mount(page, enhanced)
   await page.addStyleTag({ content: 'ul, ol { list-style: none; }' })
@@ -140,8 +150,16 @@ test('image resize handle persists a responsive width with keyboard controls', a
 test('image dialog requires alternative text without a decorative option', async ({ page }) => {
   await mount(page, basic)
   await expect(page.getByRole('button', { name: 'Add image' }).locator('svg[data-rte-icon="image"]')).toHaveCount(1)
+  const imageButton = await page.getByRole('button', { name: 'Add image' }).boundingBox()
+  const imageIcon = await page.getByRole('button', { name: 'Add image' }).locator('svg[data-rte-icon="image"]').boundingBox()
+  expect(Math.abs((imageButton!.x + imageButton!.width / 2) - (imageIcon!.x + imageIcon!.width / 2))).toBeLessThanOrEqual(1)
+  expect(Math.abs((imageButton!.y + imageButton!.height / 2) - (imageIcon!.y + imageIcon!.height / 2))).toBeLessThanOrEqual(1)
   await expect(page.getByRole('button', { name: 'Table', exact: true }).locator('svg[data-rte-icon="image"]')).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Clear formatting' }).locator('svg[data-rte-icon="clear-formatting"]')).toHaveCount(1)
+  const clearButton = await page.getByRole('button', { name: 'Clear formatting' }).boundingBox()
+  const clearIcon = await page.getByRole('button', { name: 'Clear formatting' }).locator('svg[data-rte-icon="clear-formatting"]').boundingBox()
+  expect(Math.abs((clearButton!.x + clearButton!.width / 2) - (clearIcon!.x + clearIcon!.width / 2))).toBeLessThanOrEqual(1)
+  expect(Math.abs((clearButton!.y + clearButton!.height / 2) - (clearIcon!.y + clearIcon!.height / 2))).toBeLessThanOrEqual(1)
   await expect(page.getByRole('button', { name: 'Add image' }).locator('svg[data-rte-icon="clear-formatting"]')).toHaveCount(0)
   await page.getByRole('button', { name: 'Add image' }).click()
 

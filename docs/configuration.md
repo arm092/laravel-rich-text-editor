@@ -20,6 +20,14 @@ Font families are deliberately unsupported. To enable text sizes, map stable nam
 
 Saved HTML uses `data-rte-size` rather than arbitrary inline styles, allowing the sanitizer to enforce the list exactly.
 
+Block text alignment is also profile-controlled:
+
+```php
+'text_alignments' => ['left', 'center', 'right', 'justify'],
+```
+
+Add `textAlign` to the profile toolbar to expose the control. It applies only to paragraphs and allowed headings and persists as `data-rte-text-align`.
+
 Text and background colors use the active profile's Tailwind `500` palette:
 
 ```php

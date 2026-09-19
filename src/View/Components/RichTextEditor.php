@@ -46,6 +46,7 @@ class RichTextEditor extends Component
             'minHeight' => $this->minHeight,
             'toolbar' => $profileSettings['toolbar'] ?? [],
             'headings' => $profileSettings['headings'] ?? [2, 3, 4],
+            'textAlignments' => $profileSettings['text_alignments'] ?? [],
             'fontSizes' => $profileSettings['font_sizes'] ?? [],
             'colors' => $profileSettings['colors'] ?? ['enabled' => false, 'palette' => []],
             'links' => $profileSettings['links'] ?? [],

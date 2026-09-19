@@ -3,6 +3,7 @@ import { normalizeEmpty, sanitizeHtml } from '../../resources/js/sanitize'
 
 const options = {
   headings: [2, 3, 4],
+  textAlignments: ['left', 'center', 'right', 'justify'],
   links: { schemes: ['http', 'https', 'mailto', 'tel'], allow_relative: true },
   images: { schemes: ['http', 'https'], alignments: ['left', 'center', 'right'] },
   tables: {
@@ -18,6 +19,11 @@ const options = {
 }
 
 describe('HTML sanitization', () => {
+  it('canonicalizes safe block text alignment without inline styles', () => {
+    const result = sanitizeHtml('<h2 style="text-align: CENTER">Heading</h2><p data-rte-text-align="justify">Body</p><p data-rte-text-align="wide">Invalid</p>', options)
+
+    expect(result.html).toBe('<h2 data-rte-text-align="center">Heading</h2><p data-rte-text-align="justify">Body</p><p>Invalid</p>')
+  })
   it('keeps profile-supported semantic HTML', () => {
     const html = '<h2>Title</h2><p>Hello <strong>world</strong>.</p>'
     const result = sanitizeHtml(html, options)

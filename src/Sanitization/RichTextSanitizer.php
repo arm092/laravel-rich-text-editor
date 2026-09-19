@@ -27,6 +27,7 @@ class RichTextSanitizer
         }
 
         $settings = $this->profile($profile);
+        $html = $this->normalizeBlockTextAlignInput($html, $settings);
         $html = $this->normalizeTableInput($html, $settings);
         $sanitized = (new HtmlSanitizer($this->configuration($settings)))->sanitize($html);
         $sanitized = $this->normalizeRestrictedAttributes($sanitized, $settings);
@@ -49,11 +50,12 @@ class RichTextSanitizer
     private function configuration(array $settings): HtmlSanitizerConfig
     {
         $config = new HtmlSanitizerConfig();
-        foreach (['p', 'br', 'strong', 'em', 'u', 's', 'code', 'ul', 'ol', 'li', 'blockquote', 'pre', 'hr'] as $element) {
+        foreach (['br', 'strong', 'em', 'u', 's', 'code', 'ul', 'ol', 'li', 'blockquote', 'pre', 'hr'] as $element) {
             $config = $config->allowElement($element);
         }
+        $config = $config->allowElement('p', ['data-rte-text-align']);
         foreach ($settings['headings'] ?? [] as $level) {
-            $config = $config->allowElement('h'.(int) $level);
+            $config = $config->allowElement('h'.(int) $level, ['data-rte-text-align']);
         }
         if ($settings['tables']['enabled'] ?? false) {
             $config = $config
@@ -91,6 +93,7 @@ class RichTextSanitizer
 
         $xpath = new DOMXPath($document);
         $allowedAttributes = [
+            'p' => ['data-rte-text-align'],
             'a' => ['href', 'title', 'target', 'rel'],
             'img' => ['src', 'alt', 'title', 'data-rte-align', 'style'],
             'span' => ['data-rte-size', 'class'],
@@ -98,6 +101,9 @@ class RichTextSanitizer
             'td' => ['colspan', 'rowspan', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color'],
             'th' => ['colspan', 'rowspan', 'scope', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color'],
         ];
+        foreach ($settings['headings'] ?? [] as $level) {
+            $allowedAttributes['h'.(int) $level] = ['data-rte-text-align'];
+        }
         $root = $document->documentElement;
         if (! $root instanceof DOMElement || ! $root->hasAttribute('data-rte-root')) {
             $root = $xpath->query('//*[@data-rte-root]')?->item(0);
@@ -107,6 +113,16 @@ class RichTextSanitizer
         }
         $alignments = array_map('strval', $settings['images']['alignments'] ?? []);
         $sizes = array_keys($settings['font_sizes'] ?? []);
+        $textAlignments = $settings['text_alignments'] ?? [];
+        $blockQuery = '//p';
+        foreach ($settings['headings'] ?? [] as $level) {
+            $blockQuery .= '|//h'.(int) $level;
+        }
+        foreach ($xpath->query($blockQuery) ?: [] as $node) {
+            if ($node instanceof DOMElement) {
+                $this->setCanonicalEnum($node, 'data-rte-text-align', $node->getAttribute('data-rte-text-align'), $textAlignments);
+            }
+        }
         foreach ($xpath->query('//*[@data-rte-align]') ?: [] as $node) {
             if ($node instanceof DOMElement && ! in_array($node->getAttribute('data-rte-align'), $alignments, true)) {
                 $node->removeAttribute('data-rte-align');
@@ -156,6 +172,34 @@ class RichTextSanitizer
         }
 
         return $output;
+    }
+
+    /** @param array<string, mixed> $settings */
+    private function normalizeBlockTextAlignInput(string $html, array $settings): string
+    {
+        if ($html === '') {
+            return '';
+        }
+
+        [$document, $xpath, $root] = $this->htmlFragment($html);
+        $query = '//p';
+        foreach ($settings['headings'] ?? [] as $level) {
+            $query .= '|//h'.(int) $level;
+        }
+        foreach ($xpath->query($query) ?: [] as $node) {
+            if (! $node instanceof DOMElement) {
+                continue;
+            }
+            $styles = $this->styleDeclarations($node->getAttribute('style'));
+            $this->setCanonicalEnum(
+                $node,
+                'data-rte-text-align',
+                $node->getAttribute('data-rte-text-align') ?: ($styles['text-align'] ?? ''),
+                $settings['text_alignments'] ?? [],
+            );
+        }
+
+        return $this->fragmentHtml($document, $root);
     }
 
     /** @param array<string, mixed> $settings */
