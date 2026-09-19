@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-09-19
+
+### Changed
+
+- Replace the ambiguous image toolbar glyph with a consistent monochrome photo icon that remains distinct from the table control.
+
 ## [1.3.2] - 2026-09-19
 
 ### Fixed

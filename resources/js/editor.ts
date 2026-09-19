@@ -162,7 +162,8 @@ const BUTTONS: Record<string, { label: string; icon: string }> = {
   code: { label: 'Inline code', icon: '&lt;/&gt;' }, bulletList: { label: 'Bullet list', icon: '•≡' },
   orderedList: { label: 'Numbered list', icon: '1≡' }, blockquote: { label: 'Blockquote', icon: '❝' },
   codeBlock: { label: 'Code block', icon: '{ }' }, horizontalRule: { label: 'Horizontal rule', icon: '―' },
-  link: { label: 'Add link', icon: '🔗' }, image: { label: 'Add image', icon: '▧' },
+  link: { label: 'Add link', icon: '🔗' },
+  image: { label: 'Add image', icon: '<svg data-rte-icon="image" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4.5 17 4.75-4.75 3.25 3.25 2.25-2.25L19.5 18"/></svg>' },
   clearFormatting: { label: 'Clear formatting', icon: 'Tx' }, codeView: { label: 'HTML code view', icon: 'HTML' },
   table: { label: 'Table', icon: '▦' }, colors: { label: 'Text and background color', icon: 'A' },
 }

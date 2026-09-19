@@ -139,6 +139,8 @@ test('image resize handle persists a responsive width with keyboard controls', a
 
 test('image dialog requires alternative text without a decorative option', async ({ page }) => {
   await mount(page, basic)
+  await expect(page.getByRole('button', { name: 'Add image' }).locator('svg[data-rte-icon="image"]')).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'Table', exact: true }).locator('svg[data-rte-icon="image"]')).toHaveCount(0)
   await page.getByRole('button', { name: 'Add image' }).click()
 
   await expect(page.getByLabel('Alternative text')).toHaveAttribute('required', '')
