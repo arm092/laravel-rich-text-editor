@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.7] - 2026-09-19
+
+### Fixed
+
+- Define the default theme color tokens on standalone `<x-rich-text-content>` output so rendered text and background colors work without an editor wrapper on the page.
+
 ## [1.3.6] - 2026-09-19
 
 ### Added
@@ -205,7 +211,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.6...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.7...HEAD
+[1.3.7]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.6...v1.3.7
 [1.3.6]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.5...v1.3.6
 [1.3.5]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.4...v1.3.5
 [1.3.4]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.3...v1.3.4

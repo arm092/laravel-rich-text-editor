@@ -115,6 +115,19 @@ test('list markers remain visible when the host resets list styles', async ({ pa
   await expect(page.locator('.rte-content ol')).toHaveCSS('list-style-type', 'decimal')
 })
 
+test('standalone rendered content provides its theme color tokens', async ({ page }) => {
+  await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Rendered content test</title></head><body>
+    <div class="rte-content"><p data-rte-background-color="paper" data-rte-text-color="ink">Rendered content</p></div>
+  </body></html>`)
+  await page.addStyleTag({ path: styles })
+
+  const content = page.locator('.rte-content')
+  const paragraph = content.locator('p')
+  await expect(content).toHaveCSS('--rte-paper', '#f8f8f2')
+  await expect(paragraph).toHaveCSS('background-color', 'rgb(248, 248, 242)')
+  await expect(paragraph).toHaveCSS('color', 'rgb(6, 6, 6)')
+})
+
 test('color picker applies allowlisted Tailwind 500 classes to selected text', async ({ page }) => {
   await mount(page, basic)
   await page.getByText('Hello', { exact: true }).click()
