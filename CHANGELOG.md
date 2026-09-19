@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.6] - 2026-09-19
+
 ### Added
 
 - Add the Tailwind `white` color to the default text, background, and table-cell color pickers using canonical `text-white` and `bg-white` utilities.
@@ -203,7 +205,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.5...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.6...HEAD
+[1.3.6]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.5...v1.3.6
 [1.3.5]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.4...v1.3.5
 [1.3.4]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.2...v1.3.3
