@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-09-19
+
+### Added
+
+- Add optional generic image uploads through the `image-upload-url` Blade prop with multipart submission, CSRF support, loading feedback, Laravel validation errors, and retry handling.
+
+### Changed
+
+- Keep URL insertion as the fallback when no upload endpoint is configured.
+- Require alternative text for both URL and uploaded images; the removed decorative-image checkbox remains unavailable.
+
 ## [1.3.0] - 2026-09-19
 
 ### Added

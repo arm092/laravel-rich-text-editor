@@ -143,6 +143,62 @@ test('image dialog requires alternative text without a decorative option', async
 
   await expect(page.getByLabel('Alternative text')).toHaveAttribute('required', '')
   await expect(page.getByLabel('Decorative image')).toHaveCount(0)
+  await expect(page.getByLabel('Image URL')).toBeVisible()
+  await expect(page.getByLabel('Image file')).toHaveCount(0)
+})
+
+test('image dialog uploads a selected file on Apply and inserts the returned URL', async ({ page }) => {
+  await mount(page, basic)
+  await page.route('**/images/upload', async (route) => {
+    const request = route.request()
+    expect(request.method()).toBe('POST')
+    expect(request.headers()['x-csrf-token']).toBe('test-token')
+    expect(request.postDataBuffer()?.toString()).toContain('example.png')
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ url: '/storage/example.png' }) })
+  })
+  await page.locator('[data-rich-text-editor]').evaluate((element) => {
+    const meta = document.createElement('meta')
+    meta.name = 'csrf-token'
+    meta.content = 'test-token'
+    document.head.append(meta)
+    ;(window as any).RichTextEditor.destroy(element)
+    const options = JSON.parse(element.getAttribute('data-rte-options') ?? '{}')
+    options.images.upload_url = 'https://example.test/images/upload'
+    element.setAttribute('data-rte-options', JSON.stringify(options))
+    ;(window as any).RichTextEditor.scan(element.parentElement)
+  })
+  await page.getByRole('button', { name: 'Add image' }).click()
+  await page.getByLabel('Image file').setInputFiles({ name: 'example.png', mimeType: 'image/png', buffer: Buffer.from('png') })
+  await page.getByLabel('Alternative text').fill('Uploaded example')
+  await page.getByRole('button', { name: 'Apply' }).click()
+  await expect(page.locator('.ProseMirror img[alt="Uploaded example"]')).toHaveAttribute('src', '/storage/example.png')
+})
+
+test('image upload shows Laravel validation errors and allows retry', async ({ page }) => {
+  await mount(page, basic)
+  let attempts = 0
+  await page.route('**/images/upload', async (route) => {
+    attempts++
+    if (attempts === 1) {
+      await route.fulfill({ status: 422, contentType: 'application/json', body: JSON.stringify({ errors: { image: ['The image must be a file of type: jpeg, png, webp.'] } }) })
+      return
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ url: '/storage/retry.png' }) })
+  })
+  await page.locator('[data-rich-text-editor]').evaluate((element) => {
+    ;(window as any).RichTextEditor.destroy(element)
+    const options = JSON.parse(element.getAttribute('data-rte-options') ?? '{}')
+    options.images.upload_url = 'https://example.test/images/upload'
+    element.setAttribute('data-rte-options', JSON.stringify(options))
+    ;(window as any).RichTextEditor.scan(element.parentElement)
+  })
+  await page.getByRole('button', { name: 'Add image' }).click()
+  await page.getByLabel('Image file').setInputFiles({ name: 'example.png', mimeType: 'image/png', buffer: Buffer.from('png') })
+  await page.getByLabel('Alternative text').fill('Retry example')
+  await page.getByRole('button', { name: 'Apply' }).click()
+  await expect(page.getByRole('alert')).toHaveText('The image must be a file of type: jpeg, png, webp.')
+  await page.getByRole('button', { name: 'Apply' }).click()
+  await expect(page.locator('.ProseMirror img[alt="Retry example"]')).toHaveAttribute('src', '/storage/retry.png')
 })
 
 test('table dropdown inserts and edits a canonical table', async ({ page }) => {

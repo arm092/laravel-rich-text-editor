@@ -166,6 +166,7 @@
   .rte-dialog-field--check { display: flex; align-items: center; gap: .5rem; }
   .rte-dialog-field--check input { width: 1rem; accent-color: var(--rte-primary); }
   .rte-dialog-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1rem; }
+  .rte-dialog-error { margin: 0; color: var(--rte-error); font-size: .875rem; }
   .rte-dialog-apply, .rte-dialog-cancel { border-radius: .5rem; padding: .55rem .8rem; font: 650 .8rem/1 inherit; cursor: pointer; }
   .rte-dialog-apply { border: 1px solid var(--rte-primary); background: var(--rte-primary); color: var(--rte-ink); }
   .rte-dialog-cancel { border: 1px solid var(--rte-border); background: var(--rte-white); color: var(--rte-graphite); }

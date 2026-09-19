@@ -26,6 +26,7 @@ class RichTextEditor extends Component
         public bool $disabled = false,
         public string $minHeight = '16rem',
         public ?string $error = null,
+        public ?string $imageUploadUrl = null,
         ?string $id = null,
     ) {
         if ($this->profile === null || trim($this->profile) === '') {
@@ -48,7 +49,10 @@ class RichTextEditor extends Component
             'fontSizes' => $profileSettings['font_sizes'] ?? [],
             'colors' => $profileSettings['colors'] ?? ['enabled' => false, 'palette' => []],
             'links' => $profileSettings['links'] ?? [],
-            'images' => $profileSettings['images'] ?? [],
+            'images' => array_filter([
+                ...($profileSettings['images'] ?? []),
+                'upload_url' => $this->imageUploadUrl,
+            ], static fn (mixed $value): bool => $value !== null),
             'tables' => $profileSettings['tables'] ?? ['enabled' => false],
             'codeView' => config('rich-text-editor.code_view', []),
             'theme' => config('rich-text-editor.theme', []),

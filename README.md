@@ -32,6 +32,23 @@ The publish command copies the configuration and prebuilt assets. Published conf
 />
 ```
 
+To upload JPEG, PNG, or WebP images through an application-owned endpoint, pass its URL to the component:
+
+```blade
+<x-rich-text-editor
+    name="content"
+    image-upload-url="{{ route('admin.images.store') }}"
+/>
+```
+
+The editor sends a multipart `POST` request with an `image` field, same-origin credentials, and the `X-CSRF-TOKEN` header from `<meta name="csrf-token">`. The endpoint returns an absolute or application-relative URL:
+
+```json
+{"url":"/storage/editor/example.webp"}
+```
+
+The endpoint, validation, authorization, storage, and cleanup remain application responsibilities. Without `image-upload-url`, the dialog uses Image URL. Both modes require non-empty alternative text for new images.
+
 The submitted `content` value is HTML. For safe persistence, add the package cast:
 
 ```php

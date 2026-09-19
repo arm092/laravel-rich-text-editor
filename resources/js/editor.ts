@@ -845,20 +845,42 @@ export class RichTextEditorController implements PublicEditor {
       { name: 'newTab', label: 'Open in a new tab', type: 'checkbox', value: '' },
     ], (values) => {
       if (!values.href) { this.editor.chain().focus().unsetLink().run(); return }
-      this.editor.chain().focus().extendMarkRange('link').setLink({ href: values.href, title: values.title || undefined, target: values.newTab ? '_blank' : undefined, rel: values.newTab ? 'noopener noreferrer' : undefined }).run()
+      this.editor.chain().focus().extendMarkRange('link').setLink({ href: String(values.href), title: String(values.title) || undefined, target: values.newTab ? '_blank' : undefined, rel: values.newTab ? 'noopener noreferrer' : undefined }).run()
     })
   }
 
   private openImageDialog(): void {
+    const uploadUrl = this.options.images?.upload_url
     this.openDialog('Add image', [
-      { name: 'src', label: 'Image URL', value: '', required: true },
+      ...(uploadUrl ? [{ name: 'image', label: 'Image file', value: '', required: true, type: 'file', accept: 'image/jpeg,image/png,image/webp' }] : [{ name: 'src', label: 'Image URL', value: '', required: true }]),
       { name: 'alt', label: 'Alternative text', value: '', required: true },
       { name: 'title', label: 'Title', value: '' },
       { name: 'align', label: 'Alignment', type: 'select', value: 'center', options: this.options.images?.alignments ?? ['left', 'center', 'right'] },
-    ], (values) => this.editor.chain().focus().setImage({ src: values.src, alt: values.alt, title: values.title || undefined, align: values.align } as any).run())
+    ], async (values) => {
+      const src = uploadUrl ? await this.uploadImage(uploadUrl, values.image as File) : String(values.src)
+      this.editor.chain().focus().setImage({ src, alt: String(values.alt), title: String(values.title) || undefined, align: String(values.align) } as any).run()
+    })
   }
 
-  private openDialog(title: string, fields: Array<{ name: string; label: string; value: string; required?: boolean; type?: string; options?: string[] }>, submit: (values: Record<string, string>) => void): void {
+  private async uploadImage(url: string, image: File): Promise<string> {
+    const body = new FormData()
+    body.append('image', image)
+    const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content
+    const response = await fetch(url, {
+      method: 'POST', body, credentials: 'same-origin', headers: token ? { 'X-CSRF-TOKEN': token } : undefined,
+    })
+    let payload: any
+    try { payload = await response.json() }
+    catch { throw new Error('The upload response is not valid JSON.') }
+    if (!response.ok) {
+      const message = payload?.errors?.image?.[0] ?? payload?.message ?? `Image upload failed with HTTP ${response.status}.`
+      throw new Error(String(message))
+    }
+    if (typeof payload?.url !== 'string' || payload.url.trim() === '') throw new Error('The upload response does not contain an image URL.')
+    return payload.url
+  }
+
+  private openDialog(title: string, fields: Array<{ name: string; label: string; value: string; required?: boolean; type?: string; options?: string[]; accept?: string }>, submit: (values: Record<string, string | File>) => void | Promise<void>): void {
     const backdrop = this.createElement('div', 'rte-dialog-backdrop')
     const dialog = this.createElement('form', 'rte-dialog') as HTMLFormElement
     dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true')
@@ -869,7 +891,7 @@ export class RichTextEditorController implements PublicEditor {
       if (field.type === 'select') {
         input = document.createElement('select'); input.append(...(field.options ?? []).map((option) => new Option(option[0].toUpperCase() + option.slice(1), option)))
       } else {
-        input = document.createElement('input'); input.type = field.type ?? 'text'; if (field.type === 'checkbox') label.classList.add('rte-dialog-field--check')
+        input = document.createElement('input'); input.type = field.type ?? 'text'; if (field.accept) input.accept = field.accept; if (field.type === 'checkbox') label.classList.add('rte-dialog-field--check')
       }
       input.name = field.name; input.required = Boolean(field.required); if (field.type !== 'checkbox') input.value = field.value
       label.append(input); dialog.append(label)
@@ -878,11 +900,21 @@ export class RichTextEditorController implements PublicEditor {
     const cancel = document.createElement('button'); cancel.type = 'button'; cancel.textContent = 'Cancel'; cancel.className = 'rte-dialog-cancel'
     cancel.addEventListener('click', () => backdrop.remove())
     const save = document.createElement('button'); save.type = 'submit'; save.textContent = 'Apply'; save.className = 'rte-dialog-apply'
-    actions.append(cancel, save); dialog.append(actions); backdrop.append(dialog); this.shell.append(backdrop)
-    dialog.addEventListener('submit', (event) => {
-      event.preventDefault(); const data = new FormData(dialog); const values: Record<string, string> = {}
-      for (const field of fields) values[field.name] = field.type === 'checkbox' ? (data.has(field.name) ? '1' : '') : String(data.get(field.name) ?? '')
-      submit(values); backdrop.remove()
+    const error = this.createElement('p', 'rte-dialog-error'); error.hidden = true; error.setAttribute('role', 'alert')
+    actions.append(cancel, save); dialog.append(error, actions); backdrop.append(dialog); this.shell.append(backdrop)
+    dialog.addEventListener('submit', async (event) => {
+      event.preventDefault(); const data = new FormData(dialog)
+      const submitted: Record<string, string | File> = {}
+      for (const field of fields) {
+        const value = data.get(field.name)
+        submitted[field.name] = field.type === 'checkbox' ? (data.has(field.name) ? '1' : '') : (value instanceof File ? value : String(value ?? ''))
+      }
+      error.hidden = true; save.disabled = true; save.textContent = 'Uploading…'
+      try { await submit(submitted); backdrop.remove() }
+      catch (reason) {
+        error.textContent = reason instanceof Error ? reason.message : 'Image upload failed.'
+        error.hidden = false; save.disabled = false; save.textContent = 'Apply'
+      }
     })
     ;(dialog.querySelector('input,select') as HTMLElement | null)?.focus()
   }

@@ -95,6 +95,15 @@ class BladeComponentsTest extends TestCase
         $this->assertStringContainsString('"colors":{"enabled":true', $view);
     }
 
+    public function test_image_upload_url_is_serialized_only_when_provided(): void
+    {
+        $withUpload = Blade::render('<x-rich-text-editor name="content" image-upload-url="/admin/images" />');
+        $withoutUpload = Blade::render('<x-rich-text-editor name="content" />');
+
+        $this->assertStringContainsString('"upload_url":"\/admin\/images"', $withUpload);
+        $this->assertStringNotContainsString('"upload_url"', $withoutUpload);
+    }
+
     public function test_missing_or_empty_profile_falls_back_to_standard(): void
     {
         config()->set('rich-text-editor.default_profile', null);
