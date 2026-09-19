@@ -4,9 +4,15 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-09-19
+
 ### Changed
 
 - Replace the `Tx` clear-formatting glyph with a monochrome eraser icon that remains distinct from image and code controls.
+
+### Fixed
+
+- Keep the table tools menu inside the editor when the toolbar wraps, preventing host layouts from clipping it beneath adjacent navigation.
 
 ## [1.3.3] - 2026-09-19
 

@@ -671,6 +671,7 @@ export class RichTextEditorController implements PublicEditor {
       toggle.setAttribute('aria-expanded', String(!menu.hidden))
       if (!menu.hidden) {
         this.refreshTableMenu()
+        this.positionTableMenu(menu)
         menu.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus()
       }
     })
@@ -680,10 +681,24 @@ export class RichTextEditorController implements PublicEditor {
       menu.hidden = false
       toggle.setAttribute('aria-expanded', 'true')
       this.refreshTableMenu()
+      this.positionTableMenu(menu)
       menu.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus()
     })
     control.append(toggle, menu)
     return control
+  }
+
+  private positionTableMenu(menu: HTMLElement): void {
+    menu.style.transform = ''
+    const menuRect = menu.getBoundingClientRect()
+    const shellRect = this.shell.getBoundingClientRect()
+    const shift = menuRect.left < shellRect.left
+      ? shellRect.left - menuRect.left
+      : menuRect.right > shellRect.right
+        ? shellRect.right - menuRect.right
+        : 0
+
+    if (shift !== 0) menu.style.transform = `translateX(${shift}px)`
   }
 
   private createTableWidthSelect(): HTMLElement {

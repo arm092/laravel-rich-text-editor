@@ -241,6 +241,21 @@ test('table dropdown inserts and edits a canonical table', async ({ page }) => {
   await expect(page.getByText('The HTML contains unsupported or unsafe markup.')).toHaveCount(0)
 })
 
+test('table tools stay inside the editor when the toolbar wraps', async ({ page }) => {
+  await mount(page, enhanced)
+  await page.locator('main').evaluate((element) => {
+    element.style.width = '520px'
+    element.style.marginLeft = '220px'
+    element.style.marginRight = '0'
+  })
+
+  await page.getByRole('button', { name: 'Table', exact: true }).click()
+
+  const editorLeft = await page.locator('.rte-shell').evaluate((element) => element.getBoundingClientRect().left)
+  const menuLeft = await page.locator('.rte-table-menu').evaluate((element) => element.getBoundingClientRect().left)
+  expect(menuLeft).toBeGreaterThanOrEqual(editorLeft)
+})
+
 test('table width supports exact values, keyboard resizing, drag, and full width', async ({ page }) => {
   await mount(page, enhanced)
   await page.getByRole('button', { name: 'Table', exact: true }).click()
