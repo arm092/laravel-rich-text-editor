@@ -127,6 +127,20 @@ class RichTextSanitizerTest extends TestCase
         );
     }
 
+    public function test_it_preserves_only_canonical_table_alignment(): void
+    {
+        $sanitizer = app(RichTextSanitizer::class);
+
+        $this->assertSame(
+            '<table data-rte-table-align="right"><tbody><tr><td><p>Cell</p></td></tr></tbody></table>',
+            $sanitizer->sanitize('<table data-rte-table-align="right"><tbody><tr><td><p>Cell</p></td></tr></tbody></table>'),
+        );
+        $this->assertSame(
+            '<table><tbody><tr><td><p>Cell</p></td></tr></tbody></table>',
+            $sanitizer->sanitize('<table data-rte-table-align="wide"><tbody><tr><td><p>Cell</p></td></tr></tbody></table>'),
+        );
+    }
+
     public function test_it_canonicalizes_legacy_table_attributes_and_palette_hex_colors(): void
     {
         $html = '<table border="1" cellpadding="4" cellspacing="2" class="legacy" style="width:100%"><tr><th align="RIGHT" valign="TOP" bgcolor="#f8f8f2" style="color:#F92672; width: 200px" nowrap scope="COL"><p>Header</p></th></tr></table>';

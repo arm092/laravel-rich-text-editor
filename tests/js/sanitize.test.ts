@@ -104,6 +104,14 @@ describe('HTML sanitization', () => {
     expect(blocked.diagnostics.some((diagnostic) => diagnostic.message.includes('table width'))).toBe(true)
   })
 
+  it('preserves only canonical table alignment', () => {
+    const allowed = sanitizeHtml('<table data-rte-table-align="right"><tbody><tr><td><p>Cell</p></td></tr></tbody></table>', options)
+    const blocked = sanitizeHtml('<table data-rte-table-align="wide"><tbody><tr><td><p>Cell</p></td></tr></tbody></table>', options)
+
+    expect(allowed.html).toContain('<table data-rte-table-align="right">')
+    expect(blocked.html).not.toContain('data-rte-table-align')
+  })
+
   it('canonicalizes legacy table alignment and palette colors', () => {
     const result = sanitizeHtml('<table border="1"><tr><td align="RIGHT" valign="TOP" bgcolor="#f8f8f2" style="color:#F92672;width:10px" nowrap><p>Cell</p></td></tr></table>', options)
 

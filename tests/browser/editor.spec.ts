@@ -106,13 +106,13 @@ test('color picker applies allowlisted Tailwind 500 classes to selected text', a
   await page.keyboard.press('Home')
   await page.keyboard.press('Shift+End')
   await page.locator('[data-rte-command="colors"]').click()
-  await page.locator('[data-rte-color="red"][data-rte-color-mode="text"]').click()
+  await page.getByRole('button', { name: 'Text color: red 500', exact: true }).click()
   await expect(page.locator('[data-rte-input]')).toHaveValue(/<span class="text-red-500">Hello<\/span>/)
   await page.getByText('Hello', { exact: true }).click()
   await page.keyboard.press('Home')
   await page.keyboard.press('Shift+End')
   await page.locator('[data-rte-command="colors"]').click()
-  await page.locator('[data-rte-color="blue"][data-rte-color-mode="background"]').click()
+  await page.getByRole('button', { name: 'Background color: blue 500', exact: true }).click()
 
   await expect(page.locator('[data-rte-input]')).toHaveValue(/<span class="text-red-500"><span class="bg-blue-500">Hello<\/span><\/span>/)
 })
@@ -214,12 +214,15 @@ test('table dropdown inserts and edits a canonical table', async ({ page }) => {
   await expect(page.locator('.rte-prose th').first()).toHaveAttribute('scope', 'col')
 
   await page.getByRole('button', { name: 'Table', exact: true }).click()
-  await page.getByLabel('Horizontal alignment').selectOption('center')
-  await page.getByLabel('Vertical alignment').selectOption('middle')
-  await page.getByLabel('Text color', { exact: true }).selectOption('error')
-  await page.getByLabel('Background color', { exact: true }).selectOption('paper')
+  await page.getByLabel('Table alignment').selectOption('center')
+  await page.getByLabel('Text horizontal alignment').selectOption('center')
+  await page.getByLabel('Text vertical alignment').selectOption('middle')
+  await page.getByRole('button', { name: 'Cell text color: red 500' }).click()
+  await page.getByRole('button', { name: 'Cell background color: blue 500' }).click()
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/data-rte-table-align="center"/)
   await expect(page.locator('[data-rte-input]')).toHaveValue(/data-rte-horizontal-align="center"/)
-  await expect(page.locator('[data-rte-input]')).toHaveValue(/data-rte-background-color="paper"/)
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/data-rte-text-color="red"/)
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/data-rte-background-color="blue"/)
 
   await page.getByRole('button', { name: 'Add row after' }).click()
   await page.getByRole('button', { name: 'Table', exact: true }).click()
@@ -236,7 +239,7 @@ test('table dropdown inserts and edits a canonical table', async ({ page }) => {
   await page.keyboard.press('Escape')
   await expect(page.locator('.rte-table-menu')).toBeHidden()
   await page.getByRole('button', { name: 'HTML code view' }).click()
-  await expect(page.locator('.cm-content')).toContainText('<table>')
+  await expect(page.locator('.cm-content')).toContainText('<table')
   await page.getByRole('button', { name: 'HTML code view' }).click()
   await expect(page.getByText('The HTML contains unsupported or unsafe markup.')).toHaveCount(0)
 })
@@ -282,9 +285,19 @@ test('table width supports exact values, keyboard resizing, drag, and full width
   await expect(handle).not.toHaveAttribute('aria-valuenow', '70')
 
   await page.getByRole('button', { name: 'Table', exact: true }).click()
-  await page.getByRole('button', { name: 'Full width' }).click()
+  await page.getByLabel('Table width').selectOption('')
   await expect(page.locator('[data-rte-input]')).not.toHaveValue(/data-rte-width/)
   await expect(handle).toHaveAttribute('aria-valuenow', '100')
+})
+
+test('table menu inserts a 4 × 4 table without a duplicate full-width action', async ({ page }) => {
+  await mount(page, enhanced)
+  await page.getByRole('button', { name: 'Table', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Full width' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Insert 4 × 4 table' }).click()
+
+  await expect(page.locator('.rte-prose th')).toHaveCount(4)
+  await expect(page.locator('.rte-prose td')).toHaveCount(12)
 })
 
 test('table supports cell selection, merge, split, delete, and keyboard navigation', async ({ page }) => {

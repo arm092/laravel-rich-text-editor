@@ -6,7 +6,7 @@ const BASE_TAGS = new Set([
 const TABLE_TAGS = ['table', 'tbody', 'tr', 'th', 'td']
 
 const ATTRIBUTES: Record<string, Set<string>> = {
-  table: new Set(['data-rte-width']),
+  table: new Set(['data-rte-width', 'data-rte-table-align']),
   a: new Set(['href', 'title', 'target', 'rel']),
   img: new Set(['src', 'alt', 'title', 'data-rte-align', 'style']),
   span: new Set(['data-rte-size', 'class']),
@@ -98,7 +98,10 @@ export function sanitizeHtml(source: string, options: EditorOptions): SanitizeRe
 
     if (tag === 'span') normalizeColorClasses(element, options, diagnostics)
 
-    if (tag === 'table') validateTableWidth(element, diagnostics)
+    if (tag === 'table') {
+      validateTableWidth(element, diagnostics)
+      setCanonicalEnum(element, 'data-rte-table-align', element.dataset.rteTableAlign ?? '', ['left', 'center', 'right'])
+    }
     if (tag === 'td' || tag === 'th') validateTableCell(element, tag, options, diagnostics)
   }
 
@@ -183,7 +186,7 @@ function setCanonicalColor(element: HTMLElement, attribute: string, value: strin
 
 function colorToken(value: string, options: EditorOptions): string | null {
   const candidate = value.trim().toLowerCase()
-  const allowed = options.tables?.palette ?? []
+  const allowed = [...new Set([...(options.tables?.palette ?? []), ...(options.colors?.palette ?? [])])]
   if (allowed.includes(candidate)) return candidate
   const hex = normalizeHex(candidate)
   if (!hex) return null

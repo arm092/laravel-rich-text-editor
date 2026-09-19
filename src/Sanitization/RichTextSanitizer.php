@@ -57,7 +57,7 @@ class RichTextSanitizer
         }
         if ($settings['tables']['enabled'] ?? false) {
             $config = $config
-                ->allowElement('table', ['data-rte-width'])
+                ->allowElement('table', ['data-rte-width', 'data-rte-table-align'])
                 ->allowElement('tbody')
                 ->allowElement('tr')
                 ->allowElement('td', ['colspan', 'rowspan', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color'])
@@ -94,7 +94,7 @@ class RichTextSanitizer
             'a' => ['href', 'title', 'target', 'rel'],
             'img' => ['src', 'alt', 'title', 'data-rte-align', 'style'],
             'span' => ['data-rte-size', 'class'],
-            'table' => ['data-rte-width'],
+            'table' => ['data-rte-width', 'data-rte-table-align'],
             'td' => ['colspan', 'rowspan', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color'],
             'th' => ['colspan', 'rowspan', 'scope', 'data-rte-horizontal-align', 'data-rte-vertical-align', 'data-rte-text-color', 'data-rte-background-color'],
         ];
@@ -143,6 +143,7 @@ class RichTextSanitizer
         }
         if ($settings['tables']['enabled'] ?? false) {
             $this->normalizeTableWidths($xpath);
+            $this->normalizeTableAlignments($xpath);
             $this->normalizeTableCells($xpath, $settings);
             $this->normalizeTableStructure($xpath);
         }
@@ -177,6 +178,7 @@ class RichTextSanitizer
             $this->setCanonicalColor($node, 'data-rte-background-color', $node->getAttribute('data-rte-background-color') ?: ($node->getAttribute('bgcolor') ?: ($styles['background-color'] ?? ($styles['background'] ?? ''))), $settings);
         }
         $this->normalizeTableWidths($xpath);
+        $this->normalizeTableAlignments($xpath);
         $this->normalizeTableCells($xpath, $settings);
 
         return $this->fragmentHtml($document, $root);
@@ -227,6 +229,15 @@ class RichTextSanitizer
         }
     }
 
+    private function normalizeTableAlignments(DOMXPath $xpath): void
+    {
+        foreach ($xpath->query('//table[@data-rte-table-align]') ?: [] as $node) {
+            if ($node instanceof DOMElement) {
+                $this->setCanonicalEnum($node, 'data-rte-table-align', $node->getAttribute('data-rte-table-align'), ['left', 'center', 'right']);
+            }
+        }
+    }
+
     private function normalizeTableStructure(DOMXPath $xpath): void
     {
         foreach ($xpath->query('//table') ?: [] as $table) {
@@ -267,7 +278,10 @@ class RichTextSanitizer
     /** @param array<string, mixed> $settings */
     private function setCanonicalColor(DOMElement $node, string $attribute, string $value, array $settings): void
     {
-        $token = $this->colorToken($value, $settings['tables']['palette'] ?? []);
+        $token = $this->colorToken($value, array_values(array_unique(array_merge(
+            $settings['tables']['palette'] ?? [],
+            $settings['colors']['palette'] ?? [],
+        ))));
         if ($token === null) {
             $node->removeAttribute($attribute);
         } else {

@@ -29,7 +29,7 @@ Text and background colors use the active profile's Tailwind `500` palette:
 ],
 ```
 
-The browser shows only palette entries whose `--color-{name}-500` variable is declared by the application's Tailwind theme. If the page declares none of them, the editor falls back to all standard Tailwind `500` colors. Add custom names such as `brand` to the profile allowlist so browser and PHP sanitization remain symmetric.
+The browser shows only palette entries whose `--color-{name}-500` variable is declared by the application's Tailwind theme. If the page declares none of them, the editor falls back to all standard Tailwind `500` colors. The same swatches are used for selected table cells. Add custom names such as `brand` to the profile allowlist so browser and PHP sanitization remain symmetric.
 
 Configure responsive image widths inside each profile:
 
@@ -63,6 +63,6 @@ Configure tables inside each profile:
 ],
 ```
 
-The `minimal` profile disables tables. Custom profiles may restrict the alignment, scope, span, and palette allowlists further.
+The `minimal` profile disables tables. Custom profiles may restrict the cell alignment, scope, span, and palette allowlists further. Cell color controls use `colors.palette`; `tables.palette` remains an additional sanitizer allowlist for backward-compatible theme tokens already stored by older releases.
 
 Table resizing needs no separate option. When `tables.enabled` is true, widths from 20% through 100% are available in 5% increments through drag, keyboard, and exact-width controls.

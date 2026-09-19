@@ -115,9 +115,9 @@ Both files expose the same API: `create`, `scan`, `destroy`, `getHTML`, `setHTML
 | `profiles.*.colors` | Tailwind `500` palette | Enables allowlisted text and background colors. |
 | `profiles.*.images.resize` | `20–100`, step `5` | Controls safe responsive image resizing. |
 | `profiles.*.tables.enabled` | `true` in `standard` | Enables responsive tables and their toolbar. |
-| `profiles.*.tables.palette` | Eight theme tokens | Restricts cell text and background colors. |
+| `profiles.*.tables.palette` | Eight legacy theme tokens | Keeps previously stored table-cell colors valid; new cell colors use `profiles.*.colors`. |
 
-Enabled tables can be resized from 20% through 100% without additional configuration. Their canonical `data-rte-width` HTML remains compatible with strict CSP policies.
+Enabled tables can be resized from 20% through 100% without additional configuration and aligned left, center, or right. Their canonical `data-rte-width` and `data-rte-table-align` HTML remains compatible with strict CSP policies. Table-cell colors use the same Tailwind `500` swatches as the main color picker.
 
 ## Roadmap
 

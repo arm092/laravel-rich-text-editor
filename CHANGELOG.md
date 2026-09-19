@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Add 4 × 4 table insertion and left, center, or right alignment for reduced-width tables.
+
+### Changed
+
+- Clarify that horizontal and vertical alignment controls affect text inside the selected cell.
+- Use the same Tailwind `500` swatch dialog and active profile palette for ordinary text and table-cell colors.
+- Remove the duplicate `Full width` action; full width remains available in the table-width selector.
+
 ## [1.3.4] - 2026-09-19
 
 ### Changed

@@ -227,10 +227,18 @@ const RestrictedTable = Table.extend({
           ? { 'data-rte-width': String(attributes.width) }
           : {},
       },
+      alignment: {
+        default: null,
+        parseHTML: (element: HTMLElement) => element.getAttribute('data-rte-table-align'),
+        renderHTML: (attributes: Record<string, unknown>) => attributes.alignment
+          ? { 'data-rte-table-align': String(attributes.alignment) }
+          : {},
+      },
     }
   },
   renderHTML({ node }) {
-    const attributes = TABLE_WIDTHS.includes(Number(node.attrs.width)) ? { 'data-rte-width': String(node.attrs.width) } : {}
+    const attributes: Record<string, string> = TABLE_WIDTHS.includes(Number(node.attrs.width)) ? { 'data-rte-width': String(node.attrs.width) } : {}
+    if (node.attrs.alignment) attributes['data-rte-table-align'] = String(node.attrs.alignment)
     return ['table', attributes, ['tbody', 0]]
   },
   addNodeView() {
@@ -268,6 +276,15 @@ const RestrictedTable = Table.extend({
         }
         handle.setAttribute('aria-valuenow', String(previewWidth))
         handle.setAttribute('aria-valuetext', `${previewWidth}% width`)
+      }
+      const renderAlignment = (alignment: string | null) => {
+        if (alignment) {
+          wrapper.dataset.rteTableAlign = alignment
+          table.dataset.rteTableAlign = alignment
+        } else {
+          delete wrapper.dataset.rteTableAlign
+          delete table.dataset.rteTableAlign
+        }
       }
       const commitWidth = (width: number) => {
         const position = props.getPos()
@@ -311,6 +328,7 @@ const RestrictedTable = Table.extend({
         commitWidth(next)
       })
       renderWidth(previewWidth)
+      renderAlignment(currentNode.attrs.alignment)
 
       return {
         dom: wrapper,
@@ -319,6 +337,7 @@ const RestrictedTable = Table.extend({
           if (node.type !== currentNode.type) return false
           currentNode = node
           renderWidth(Number(node.attrs.width) || 100)
+          renderAlignment(node.attrs.alignment)
           return true
         },
         ignoreMutation: (mutation) => wrapper.contains(mutation.target) && !body.contains(mutation.target),
@@ -644,10 +663,10 @@ export class RichTextEditorController implements PublicEditor {
     menu.setAttribute('aria-label', 'Table tools')
 
     const actions: Array<[string, string]> = [
-      ['insert', 'Insert 3 × 3 table'],
+      ['insert-3', 'Insert 3 × 3 table'], ['insert-4', 'Insert 4 × 4 table'],
       ['row-before', 'Add row before'], ['row-after', 'Add row after'], ['row-delete', 'Delete row'],
       ['column-before', 'Add column before'], ['column-after', 'Add column after'], ['column-delete', 'Delete column'],
-      ['header-row', 'Toggle header row'], ['merge', 'Merge cells'], ['split', 'Split cell'], ['full-width', 'Full width'], ['delete', 'Delete table'],
+      ['header-row', 'Toggle header row'], ['merge', 'Merge cells'], ['split', 'Split cell'], ['delete', 'Delete table'],
     ]
     for (const [action, label] of actions) {
       const button = document.createElement('button')
@@ -661,11 +680,17 @@ export class RichTextEditorController implements PublicEditor {
 
     menu.append(
       this.createTableWidthSelect(),
-      this.createTableSelect('Horizontal alignment', 'horizontalAlign', ['', ...(this.options.tables?.horizontal_alignments ?? [])]),
-      this.createTableSelect('Vertical alignment', 'verticalAlign', ['', ...(this.options.tables?.vertical_alignments ?? [])]),
-      this.createTableSelect('Text color', 'textColor', ['', ...(this.options.tables?.palette ?? [])]),
-      this.createTableSelect('Background color', 'backgroundColor', ['', ...(this.options.tables?.palette ?? [])]),
+      this.createTableAlignmentSelect(),
+      this.createTableSelect('Text horizontal alignment', 'horizontalAlign', ['', ...(this.options.tables?.horizontal_alignments ?? [])]),
+      this.createTableSelect('Text vertical alignment', 'verticalAlign', ['', ...(this.options.tables?.vertical_alignments ?? [])]),
     )
+    const colors = resolveTailwind500Colors(this.options.colors?.palette ?? [])
+    const colorPanel = this.createElement('div', 'rte-table-colors')
+    colorPanel.append(
+      this.createColorSection('Cell text color', 'text', colors, (color) => this.applyTableColor('textColor', color)),
+      this.createColorSection('Cell background color', 'background', colors, (color) => this.applyTableColor('backgroundColor', color)),
+    )
+    menu.append(colorPanel)
     toggle.addEventListener('click', () => {
       menu.hidden = !menu.hidden
       toggle.setAttribute('aria-expanded', String(!menu.hidden))
@@ -717,6 +742,22 @@ export class RichTextEditorController implements PublicEditor {
     return field
   }
 
+  private createTableAlignmentSelect(): HTMLElement {
+    const field = document.createElement('label')
+    field.className = 'rte-table-field'
+    field.append(document.createTextNode('Table alignment'))
+    const select = document.createElement('select')
+    select.dataset.rteTableAlignment = ''
+    select.setAttribute('aria-label', 'Table alignment')
+    select.append(...['', 'left', 'center', 'right'].map((value) => new Option(value ? value[0].toUpperCase() + value.slice(1) : 'Reset', value)))
+    select.addEventListener('change', () => {
+      this.editor.commands.updateAttributes('table', { alignment: select.value || null })
+      this.refreshTableMenu()
+    })
+    field.append(select)
+    return field
+  }
+
   private createColorControl(): HTMLElement {
     const control = this.createElement('div', 'rte-color-control')
     const toggle = document.createElement('button')
@@ -746,7 +787,7 @@ export class RichTextEditorController implements PublicEditor {
     return control
   }
 
-  private createColorSection(label: string, mode: 'text' | 'background', colors: Array<{ name: string; value: string }>): HTMLElement {
+  private createColorSection(label: string, mode: 'text' | 'background', colors: Array<{ name: string; value: string }>, apply = (color: string | null) => this.applyTextColor(mode, color)): HTMLElement {
     const section = this.createElement('div', 'rte-color-section')
     const heading = this.createElement('span', 'rte-color-label'); heading.textContent = label
     const grid = this.createElement('div', 'rte-color-grid')
@@ -754,7 +795,7 @@ export class RichTextEditorController implements PublicEditor {
     reset.type = 'button'; reset.className = 'rte-color-swatch rte-color-reset'; reset.title = `Reset ${label.toLowerCase()}`
     reset.setAttribute('aria-label', reset.title); reset.textContent = '×'
     reset.addEventListener('mousedown', (event) => event.preventDefault())
-    reset.addEventListener('click', () => this.applyTextColor(mode, null))
+    reset.addEventListener('click', () => apply(null))
     grid.append(reset)
     for (const color of colors) {
       const button = document.createElement('button')
@@ -762,7 +803,7 @@ export class RichTextEditorController implements PublicEditor {
       button.dataset.rteColorMode = mode; button.title = `${label}: ${color.name} 500`; button.setAttribute('aria-label', button.title)
       button.style.setProperty('--rte-swatch', color.value)
       button.addEventListener('mousedown', (event) => event.preventDefault())
-      button.addEventListener('click', () => this.applyTextColor(mode, color.name))
+      button.addEventListener('click', () => apply(color.name))
       grid.append(button)
     }
     section.append(heading, grid)
@@ -776,6 +817,11 @@ export class RichTextEditorController implements PublicEditor {
     else chain.unsetMark(mark).run()
     this.closeColorMenu()
     this.refreshToolbar()
+  }
+
+  private applyTableColor(attribute: 'textColor' | 'backgroundColor', color: string | null): void {
+    this.editor.commands.setCellAttribute(attribute, color)
+    this.refreshTableMenu()
   }
 
   private closeColorMenu(): void {
@@ -802,8 +848,9 @@ export class RichTextEditorController implements PublicEditor {
   }
 
   private runTableAction(action: string): void {
-    if (action === 'insert') {
-      this.editor.commands.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+    if (action === 'insert-3' || action === 'insert-4') {
+      const size = action === 'insert-4' ? 4 : 3
+      this.editor.commands.insertTable({ rows: size, cols: size, withHeaderRow: true })
       this.closeTableMenu()
     }
     else if (action === 'row-before') this.editor.commands.addRowBefore()
@@ -815,7 +862,6 @@ export class RichTextEditorController implements PublicEditor {
     else if (action === 'header-row') this.editor.commands.toggleHeaderRow()
     else if (action === 'merge') this.editor.commands.mergeCells()
     else if (action === 'split') this.editor.commands.splitCell()
-    else if (action === 'full-width') this.editor.commands.updateAttributes('table', { width: null })
     else if (action === 'delete') this.editor.commands.deleteTable()
     this.refreshTableMenu()
     this.closeTableMenu()
@@ -828,7 +874,7 @@ export class RichTextEditorController implements PublicEditor {
     const inTable = this.editor.isActive('table')
     menu.querySelectorAll<HTMLButtonElement>('[data-rte-table-action]').forEach((button) => {
       const action = button.dataset.rteTableAction
-      if (action === 'insert') button.disabled = inTable
+      if (action?.startsWith('insert-')) button.disabled = inTable
       else if (!inTable) button.disabled = true
       else if (action === 'merge') button.disabled = !this.editor.can().mergeCells()
       else if (action === 'split') button.disabled = !this.editor.can().splitCell()
@@ -844,6 +890,12 @@ export class RichTextEditorController implements PublicEditor {
       width.disabled = !inTable
       width.value = inTable ? String(this.editor.getAttributes('table').width ?? '') : ''
     }
+    const alignment = menu.querySelector<HTMLSelectElement>('[data-rte-table-alignment]')
+    if (alignment) {
+      alignment.disabled = !inTable
+      alignment.value = inTable ? String(this.editor.getAttributes('table').alignment ?? '') : ''
+    }
+    menu.querySelectorAll<HTMLButtonElement>('.rte-table-colors button').forEach((button) => { button.disabled = !inTable })
   }
 
   private closeTableMenu(): void {

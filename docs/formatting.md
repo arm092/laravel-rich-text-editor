@@ -22,10 +22,10 @@ File uploads and a media manager remain outside the package scope.
 
 ## Tables
 
-The Table dropdown inserts a 3 × 3 table with one header row and two body rows. When the cursor is in a table, it can add or remove rows and columns, toggle the current row between header and body cells, merge or split selected cells, and delete the table.
+The Table dropdown inserts either a 3 × 3 or 4 × 4 table. Both options create one header row; the remaining rows use body cells. When the cursor is in a table, it can add or remove rows and columns, toggle the current row between header and body cells, merge or split selected cells, and delete the table.
 
-The same dropdown controls table width, horizontal and vertical alignment, plus allowlisted text and background colors for the selected cell. Reset removes the corresponding attribute. Header cells created by the editor use `scope="col"`.
+The same dropdown controls table width and whole-table horizontal alignment. The controls labelled `Text horizontal alignment` and `Text vertical alignment` affect content inside the selected cell, not the table itself. Cell text and background colors use the same Tailwind `500` swatch dialog and active profile palette as the main color picker. Reset removes the corresponding attribute. Header cells created by the editor use `scope="col"`.
 
-Every enabled table can be resized from 20% through 100% in 5% increments by dragging its right-edge handle, using the keyboard, or selecting an exact width. `Full width` restores the responsive default. Reduced widths are stored as a CSP-safe `data-rte-width` attribute; full width omits the attribute.
+Every enabled table can be resized from 20% through 100% in 5% increments by dragging its right-edge handle, using the keyboard, or selecting an exact width. Choose `Full width` in the width selector to restore the responsive default. Reduced widths are stored as a CSP-safe `data-rte-width` attribute; full width omits the attribute. Reduced-width tables store optional alignment as `data-rte-table-align`.
 
 Use Tab and Shift+Tab to move between cells. Tables scroll horizontally inside their content container on narrow screens instead of widening the page.
