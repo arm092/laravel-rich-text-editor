@@ -164,7 +164,7 @@ const BUTTONS: Record<string, { label: string; icon: string }> = {
   codeBlock: { label: 'Code block', icon: '{ }' }, horizontalRule: { label: 'Horizontal rule', icon: '―' },
   link: { label: 'Add link', icon: '🔗' },
   image: { label: 'Add image', icon: '<svg data-rte-icon="image" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4.5 17 4.75-4.75 3.25 3.25 2.25-2.25L19.5 18"/></svg>' },
-  clearFormatting: { label: 'Clear formatting', icon: 'Tx' }, codeView: { label: 'HTML code view', icon: 'HTML' },
+  clearFormatting: { label: 'Clear formatting', icon: '<svg data-rte-icon="clear-formatting" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16.5 4.5 3 3a2.1 2.1 0 0 1 0 3L11 19H6.5L3 15.5a2.1 2.1 0 0 1 0-3l10.5-8a2.1 2.1 0 0 1 3 0Z"/><path d="m9 19 7.5-7.5M14 19h7"/></svg>' }, codeView: { label: 'HTML code view', icon: 'HTML' },
   table: { label: 'Table', icon: '▦' }, colors: { label: 'Text and background color', icon: 'A' },
 }
 

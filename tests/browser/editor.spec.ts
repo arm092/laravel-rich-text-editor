@@ -8,7 +8,7 @@ const styles = resolve('dist/rich-text-editor.css')
 
 async function mount(page: Page, script: string) {
   await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Editor test</title></head><body>
-    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","|","bold","italic","link","image","colors","table","|","codeView"],"headings":[2,3,4],"colors":{"enabled":true,"palette":["red","blue"]},"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
+    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","|","bold","italic","link","image","colors","clearFormatting","table","|","codeView"],"headings":[2,3,4],"colors":{"enabled":true,"palette":["red","blue"]},"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
       <label for="content">Content</label><textarea id="content" name="content" data-rte-input><h2>Hello</h2><p>Editor content</p><img src="https://example.com/image.jpg" alt="Example"></textarea><div data-rte-mount></div>
     </div></form></main></body></html>`)
   await page.addStyleTag({ path: styles })
@@ -141,6 +141,8 @@ test('image dialog requires alternative text without a decorative option', async
   await mount(page, basic)
   await expect(page.getByRole('button', { name: 'Add image' }).locator('svg[data-rte-icon="image"]')).toHaveCount(1)
   await expect(page.getByRole('button', { name: 'Table', exact: true }).locator('svg[data-rte-icon="image"]')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Clear formatting' }).locator('svg[data-rte-icon="clear-formatting"]')).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'Add image' }).locator('svg[data-rte-icon="clear-formatting"]')).toHaveCount(0)
   await page.getByRole('button', { name: 'Add image' }).click()
 
   await expect(page.getByLabel('Alternative text')).toHaveAttribute('required', '')
