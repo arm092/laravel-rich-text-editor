@@ -11,6 +11,8 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
 class RichTextSanitizer
 {
+    private const DEFAULT_TEXT_ALIGNMENTS = ['left', 'center', 'right', 'justify'];
+
     /** @param array<string, array<string, mixed>> $profiles */
     public function __construct(
         private readonly array $profiles,
@@ -113,7 +115,7 @@ class RichTextSanitizer
         }
         $alignments = array_map('strval', $settings['images']['alignments'] ?? []);
         $sizes = array_keys($settings['font_sizes'] ?? []);
-        $textAlignments = $settings['text_alignments'] ?? [];
+        $textAlignments = $settings['text_alignments'] ?? self::DEFAULT_TEXT_ALIGNMENTS;
         $blockQuery = '//p';
         foreach ($settings['headings'] ?? [] as $level) {
             $blockQuery .= '|//h'.(int) $level;
@@ -195,7 +197,7 @@ class RichTextSanitizer
                 $node,
                 'data-rte-text-align',
                 $node->getAttribute('data-rte-text-align') ?: ($styles['text-align'] ?? ''),
-                $settings['text_alignments'] ?? [],
+                $settings['text_alignments'] ?? self::DEFAULT_TEXT_ALIGNMENTS,
             );
         }
 

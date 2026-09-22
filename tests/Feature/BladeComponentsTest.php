@@ -95,6 +95,15 @@ class BladeComponentsTest extends TestCase
         $this->assertStringContainsString('"colors":{"enabled":true', $view);
     }
 
+    public function test_legacy_profile_without_text_alignments_serializes_the_standard_defaults(): void
+    {
+        config()->set('rich-text-editor.profiles.standard.text_alignments', null);
+
+        $view = Blade::render('<x-rich-text-editor name="content" />');
+
+        $this->assertStringContainsString('"textAlignments":["left","center","right","justify"]', $view);
+    }
+
     public function test_image_upload_url_is_serialized_only_when_provided(): void
     {
         $withUpload = Blade::render('<x-rich-text-editor name="content" image-upload-url="/admin/images" />');

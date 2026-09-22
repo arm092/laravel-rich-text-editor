@@ -24,6 +24,14 @@ describe('HTML sanitization', () => {
 
     expect(result.html).toBe('<h2 data-rte-text-align="center">Heading</h2><p data-rte-text-align="justify">Body</p><p>Invalid</p>')
   })
+
+  it('uses the toolbar alignment defaults when the profile setting is absent', () => {
+    const legacyOptions = { ...options, textAlignments: undefined }
+    const result = sanitizeHtml('<p data-rte-text-align="right">Body</p>', legacyOptions)
+
+    expect(result.html).toBe('<p data-rte-text-align="right">Body</p>')
+    expect(result.changed).toBe(false)
+  })
   it('keeps profile-supported semantic HTML', () => {
     const html = '<h2>Title</h2><p>Hello <strong>world</strong>.</p>'
     const result = sanitizeHtml(html, options)

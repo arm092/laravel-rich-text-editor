@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.9] - 2026-09-22
+
+### Fixed
+
+- Keep the visual editor, client sanitizer, server sanitizer, and `RichTextRule` aligned for legacy profiles that omit `text_alignments` by applying the standard left, center, right, and justify defaults. An explicitly empty allowlist still disables text alignment.
+
 ## [1.3.8] - 2026-09-22
 
 ### Added
@@ -218,7 +224,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.8...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.9...HEAD
+[1.3.9]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.8...v1.3.9
 [1.3.8]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.7...v1.3.8
 [1.3.7]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.6...v1.3.7
 [1.3.6]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.5...v1.3.6

@@ -4,6 +4,7 @@ const BASE_TAGS = new Set([
   'p', 'br', 'strong', 'em', 'u', 's', 'code', 'ul', 'ol', 'li', 'blockquote', 'pre', 'hr', 'a', 'img', 'span',
 ])
 const TABLE_TAGS = ['table', 'tbody', 'tr', 'th', 'td']
+const DEFAULT_TEXT_ALIGNMENTS = ['left', 'center', 'right', 'justify']
 
 const ATTRIBUTES: Record<string, Set<string>> = {
   p: new Set(['data-rte-text-align']),
@@ -102,7 +103,7 @@ export function sanitizeHtml(source: string, options: EditorOptions): SanitizeRe
 
     if (tag === 'span') normalizeColorClasses(element, options, diagnostics)
     if (tag === 'p' || headings.has(tag)) {
-      setCanonicalEnum(element, 'data-rte-text-align', element.dataset.rteTextAlign ?? '', options.textAlignments ?? [])
+      setCanonicalEnum(element, 'data-rte-text-align', element.dataset.rteTextAlign ?? '', options.textAlignments ?? DEFAULT_TEXT_ALIGNMENTS)
     }
 
     if (tag === 'table') {
@@ -121,7 +122,7 @@ function normalizeBlockTextAlignInput(root: HTMLElement, options: EditorOptions)
   for (const block of [...root.querySelectorAll<HTMLElement>('p,h1,h2,h3,h4,h5,h6')]) {
     if (block.tagName.toLowerCase() !== 'p' && !headings.has(block.tagName.toLowerCase())) continue
     const styles = styleDeclarations(block.getAttribute('style') ?? '')
-    setCanonicalEnum(block, 'data-rte-text-align', block.dataset.rteTextAlign || styles['text-align'] || '', options.textAlignments ?? [])
+    setCanonicalEnum(block, 'data-rte-text-align', block.dataset.rteTextAlign || styles['text-align'] || '', options.textAlignments ?? DEFAULT_TEXT_ALIGNMENTS)
   }
 }
 

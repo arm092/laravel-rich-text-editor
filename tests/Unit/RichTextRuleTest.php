@@ -51,6 +51,14 @@ class RichTextRuleTest extends TestCase
         $this->assertTrue(Validator::make(['content' => $html], ['content' => [new RichTextRule()]])->passes());
     }
 
+    public function test_it_uses_standard_text_alignments_when_a_legacy_profile_omits_the_setting(): void
+    {
+        config()->set('rich-text-editor.profiles.standard.text_alignments', null);
+        $html = '<p data-rte-text-align="right">Right</p><p data-rte-text-align="center">Center</p><p data-rte-text-align="justify">Justified</p>';
+
+        $this->assertTrue(Validator::make(['content' => $html], ['content' => [new RichTextRule()]])->passes());
+    }
+
     #[DataProvider('unsafeHtml')]
     public function test_it_still_rejects_unsafe_or_unsupported_html(string $html): void
     {
