@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Allow the shared alignment controls to align a selected image and remove its alignment with Reset.
+- Open the image dialog in edit mode for a selected image so its source, alternative text, title, and alignment can be updated without inserting another image.
+
 ## [1.3.7] - 2026-09-19
 
 ### Fixed

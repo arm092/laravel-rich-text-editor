@@ -6,7 +6,7 @@ The color picker applies allowlisted Tailwind `text-{color}-500` and `bg-{color}
 
 The `Text alignment` icon group applies left, center, right, justified, or reset alignment to paragraphs and headings. The active alignment is highlighted, and every icon has a tooltip and accessible label. A selection inside one block aligns that whole block; a selection spanning multiple blocks aligns every selected paragraph and heading. Canonical HTML uses `data-rte-text-align` rather than inline styles.
 
-Links support relative URLs plus HTTP, HTTPS, mailto, and tel by default. Links opened in a new tab receive `noopener noreferrer`. Images accept HTTP or HTTPS URLs, require alternative text in the visual insertion dialog, and support left, center, and right alignment. Existing code-view HTML may still use an explicit empty `alt` for a decorative image.
+Links support relative URLs plus HTTP, HTTPS, mailto, and tel by default. Links opened in a new tab receive `noopener noreferrer`. Images accept HTTP or HTTPS URLs, require alternative text in the visual insertion dialog, and support left, center, and right alignment. Select an image to reuse the alignment buttons for image positioning; Reset removes image alignment. With an image selected, the image toolbar button opens an edit dialog for its source, alternative text, title, and alignment instead of inserting another image. Existing code-view HTML may still use an explicit empty `alt` for a decorative image.
 
 ## Image uploads
 

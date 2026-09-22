@@ -62,7 +62,8 @@ function createAlignedImage(resize: ImageResizeOptions = {}) {
           image.alt = alt ?? ''
           if (title) image.title = title
           else image.removeAttribute('title')
-          wrapper.dataset.rteAlign = align
+          if (align) wrapper.dataset.rteAlign = align
+          else delete wrapper.dataset.rteAlign
           wrapper.style.width = width ? `${width}%` : ''
           handle.setAttribute('aria-valuenow', String(width ?? 100))
           handle.setAttribute('aria-valuetext', `${width ?? 100}% width`)
@@ -571,7 +572,11 @@ export class RichTextEditorController implements PublicEditor {
           button.setAttribute('aria-label', button.title); button.setAttribute('aria-pressed', 'false')
           button.innerHTML = TEXT_ALIGN_ICONS[alignment]
           button.addEventListener('mousedown', (event) => event.preventDefault())
-          button.addEventListener('click', () => { this.editor.chain().focus().setTextAlign(alignment).run(); this.refreshToolbar() })
+          button.addEventListener('click', () => {
+            if (this.editor.isActive('image')) this.editor.chain().focus().updateAttributes('image', { align: alignment }).run()
+            else this.editor.chain().focus().setTextAlign(alignment).run()
+            this.refreshToolbar()
+          })
           group.append(button)
         }
         const reset = document.createElement('button')
@@ -579,7 +584,11 @@ export class RichTextEditorController implements PublicEditor {
         reset.title = 'Reset text alignment'; reset.setAttribute('aria-label', reset.title)
         reset.innerHTML = '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m7 7 10 10M17 7 7 17"/></svg>'
         reset.addEventListener('mousedown', (event) => event.preventDefault())
-        reset.addEventListener('click', () => { this.editor.chain().focus().unsetTextAlign().run(); this.refreshToolbar() })
+        reset.addEventListener('click', () => {
+          if (this.editor.isActive('image')) this.editor.chain().focus().updateAttributes('image', { align: null }).run()
+          else this.editor.chain().focus().unsetTextAlign().run()
+          this.refreshToolbar()
+        })
         group.append(reset)
         this.toolbar.append(group)
         continue
@@ -988,14 +997,23 @@ export class RichTextEditorController implements PublicEditor {
 
   private openImageDialog(): void {
     const uploadUrl = this.options.images?.upload_url
-    this.openDialog('Add image', [
-      ...(uploadUrl ? [{ name: 'image', label: 'Image file', value: '', required: true, type: 'file', accept: 'image/jpeg,image/png,image/webp' }] : [{ name: 'src', label: 'Image URL', value: '', required: true }]),
-      { name: 'alt', label: 'Alternative text', value: '', required: true },
-      { name: 'title', label: 'Title', value: '' },
-      { name: 'align', label: 'Alignment', type: 'select', value: 'center', options: this.options.images?.alignments ?? ['left', 'center', 'right'] },
+    const editing = this.editor.isActive('image')
+    const attributes = editing ? this.editor.getAttributes('image') : {}
+    this.openDialog(editing ? 'Edit image' : 'Add image', [
+      ...(uploadUrl
+        ? [{ name: 'image', label: editing ? 'Replacement image file' : 'Image file', value: '', required: !editing, type: 'file', accept: 'image/jpeg,image/png,image/webp' }]
+        : [{ name: 'src', label: 'Image URL', value: String(attributes.src ?? ''), required: true }]),
+      { name: 'alt', label: 'Alternative text', value: String(attributes.alt ?? ''), required: true },
+      { name: 'title', label: 'Title', value: String(attributes.title ?? '') },
+      { name: 'align', label: 'Alignment', type: 'select', value: String(attributes.align ?? 'center'), options: this.options.images?.alignments ?? ['left', 'center', 'right'] },
     ], async (values) => {
-      const src = uploadUrl ? await this.uploadImage(uploadUrl, values.image as File) : String(values.src)
-      this.editor.chain().focus().setImage({ src, alt: String(values.alt), title: String(values.title) || undefined, align: String(values.align) } as any).run()
+      const replacement = values.image as File | undefined
+      const src = uploadUrl
+        ? (replacement?.size ? await this.uploadImage(uploadUrl, replacement) : String(attributes.src ?? ''))
+        : String(values.src)
+      const next = { src, alt: String(values.alt), title: String(values.title) || null, align: String(values.align) || null }
+      if (editing) this.editor.chain().focus().updateAttributes('image', next).run()
+      else this.editor.chain().focus().setImage(next as any).run()
     })
   }
 
@@ -1057,6 +1075,7 @@ export class RichTextEditorController implements PublicEditor {
   }
 
   private refreshToolbar(): void {
+    const imageSelected = this.editor.isActive('image')
     const active: Record<string, boolean> = {
       bold: this.editor.isActive('bold'), italic: this.editor.isActive('italic'), underline: this.editor.isActive('underline'),
       strike: this.editor.isActive('strike'), code: this.editor.isActive('code'), bulletList: this.editor.isActive('bulletList'),
@@ -1075,11 +1094,18 @@ export class RichTextEditorController implements PublicEditor {
     }
     this.toolbar.querySelectorAll<HTMLButtonElement>('[data-rte-text-align]').forEach((button) => {
       const alignment = button.dataset.rteTextAlign
-      const isActive = this.editor.getAttributes('paragraph').textAlign === alignment
-        || this.editor.getAttributes('heading').textAlign === alignment
+      const isActive = imageSelected
+        ? this.editor.getAttributes('image').align === alignment
+        : this.editor.getAttributes('paragraph').textAlign === alignment || this.editor.getAttributes('heading').textAlign === alignment
+      button.disabled = imageSelected && !(this.options.images?.alignments ?? ['left', 'center', 'right']).includes(String(alignment))
       button.classList.toggle('is-active', isActive)
       button.setAttribute('aria-pressed', String(isActive))
     })
+    const imageButton = this.toolbar.querySelector<HTMLButtonElement>('[data-rte-command="image"]')
+    if (imageButton) {
+      imageButton.title = imageSelected ? 'Edit image' : 'Add image'
+      imageButton.setAttribute('aria-label', imageButton.title)
+    }
   }
 
   private syncInput(html: string, emit = true): void {

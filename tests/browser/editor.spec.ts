@@ -172,6 +172,39 @@ test('image resize handle persists a responsive width with keyboard controls', a
   await expect(page.locator('.cm-content')).toContainText(/width: \d+%/)
 })
 
+test('text alignment controls align a selected image and reset removes alignment', async ({ page }) => {
+  await mount(page, basic)
+  await page.locator('.rte-resizable-image img').click()
+
+  await page.getByRole('button', { name: 'Right text' }).click()
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/data-rte-align="right"/)
+  await expect(page.getByRole('button', { name: 'Right text' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Justify text' })).toBeDisabled()
+
+  await page.getByRole('button', { name: 'Reset text alignment' }).click()
+  await expect(page.locator('[data-rte-input]')).not.toHaveValue(/data-rte-align=/)
+})
+
+test('image dialog edits the selected image instead of inserting another one', async ({ page }) => {
+  await mount(page, basic)
+  await page.locator('.rte-resizable-image img').click()
+  await page.getByRole('button', { name: 'Edit image' }).click()
+
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByRole('heading', { name: 'Edit image' })).toBeVisible()
+  await expect(dialog.getByLabel('Image URL')).toHaveValue('https://example.com/image.jpg')
+  await expect(dialog.getByLabel('Alternative text')).toHaveValue('Example')
+  await expect(dialog.locator('select[name="align"]')).toHaveValue('center')
+  await dialog.getByLabel('Image URL').fill('https://example.com/updated.jpg')
+  await dialog.getByLabel('Alternative text').fill('Updated example')
+  await dialog.getByLabel('Title').fill('Updated title')
+  await dialog.locator('select[name="align"]').selectOption('left')
+  await page.getByRole('button', { name: 'Apply' }).click()
+
+  await expect(page.locator('.rte-prose img')).toHaveCount(1)
+  await expect(page.locator('[data-rte-input]')).toHaveValue(/<img src="https:\/\/example\.com\/updated\.jpg" alt="Updated example" title="Updated title" data-rte-align="left">/)
+})
+
 test('image dialog requires alternative text without a decorative option', async ({ page }) => {
   await mount(page, basic)
   await expect(page.getByRole('button', { name: 'Add image' }).locator('svg[data-rte-icon="image"]')).toHaveCount(1)
