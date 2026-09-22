@@ -424,6 +424,36 @@ test('responsive table stays inside a mobile viewport and scrolls horizontally',
 
   const dimensions = await page.locator('.rte-prose table').evaluate((table) => ({ client: table.clientWidth, scroll: table.scrollWidth }))
   expect(dimensions.scroll).toBeGreaterThanOrEqual(dimensions.client)
+  await expect(page.locator('.rte-prose table')).toHaveCSS('display', 'block')
+  await expect(page.locator('.rte-prose td').first()).toHaveCSS('min-width', '80px')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375)
+})
+
+test('rendered percentage tables use frontend layout without editor cell constraints', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 720 })
+  await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Rendered table test</title></head><body>
+    <main style="width: 320px; overflow: hidden">
+      <div class="rte-content">
+        <table data-rte-width="35"><tbody><tr><td>One</td><td>Two</td><td>Three</td><td>Four</td></tr></tbody></table>
+      </div>
+    </main>
+  </body></html>`)
+  await page.addStyleTag({ path: styles })
+
+  const table = page.locator('.rte-content table')
+  const cell = table.locator('td').first()
+  await expect(table).toHaveCSS('display', 'table')
+  await expect(table).toHaveCSS('table-layout', 'fixed')
+  await expect(cell).toHaveCSS('min-width', '0px')
+  await expect(cell).toHaveCSS('padding', '8px')
+
+  const dimensions = await table.evaluate((element) => ({
+    width: element.getBoundingClientRect().width,
+    parentWidth: element.parentElement!.getBoundingClientRect().width,
+    scrollWidth: element.scrollWidth,
+  }))
+  expect(dimensions.width).toBeCloseTo(dimensions.parentWidth * 0.35, 0)
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(Math.ceil(dimensions.width))
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375)
 })
 

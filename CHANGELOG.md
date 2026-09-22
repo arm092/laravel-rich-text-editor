@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.10] - 2026-09-23
+
+### Fixed
+
+- Keep horizontal table scrolling and a smaller `5rem` minimum cell width inside the visual editor without applying editor-only layout constraints to rendered content.
+- Render frontend tables with native fixed table layout, unconstrained cell minimum widths, and consistent `0.5rem` cell padding so reduced-width tables remain visible inside their containers.
+
 ## [1.3.9] - 2026-09-22
 
 ### Fixed
@@ -224,7 +231,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.9...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.10...HEAD
+[1.3.10]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.9...v1.3.10
 [1.3.9]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.8...v1.3.9
 [1.3.8]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.7...v1.3.8
 [1.3.7]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.6...v1.3.7
