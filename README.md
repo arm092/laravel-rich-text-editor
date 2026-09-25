@@ -2,6 +2,12 @@
 
 A modern, secure rich text editor for Laravel forms, Alpine.js, Tailwind CSS, and Livewire. It stores semantic HTML, ships with its browser assets, provides responsive resizable images and tables, and includes both Basic and Enhanced code view.
 
+<p align="center">
+  <a href="https://github.com/sponsors/arm092">
+    <img src="https://img.shields.io/badge/Sponsor-%E2%9D%A4-EA4AAA?logo=githubsponsors&amp;logoColor=white" alt="Sponsor arm092 on GitHub">
+  </a>
+</p>
+
 ![Visual editor and enhanced HTML code view](docs/images/editor-preview.png)
 
 > This README is the express guide. See the [full documentation](docs/README.md) for every option, integration, and security detail.
