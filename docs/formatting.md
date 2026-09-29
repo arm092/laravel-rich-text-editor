@@ -1,6 +1,10 @@
 # Toolbar and formatting
 
-The standard profile includes undo, redo, headings H2–H4, bold, italic, underline, strikethrough, lists, blockquotes, horizontal rules, links, URL images, text and background colors, tables, clear formatting, and code view. Inline code and code blocks remain available as the `code` and `codeBlock` toolbar entries for custom profiles but are disabled by default.
+The standard profile includes undo, redo, headings H2–H4, bold, italic, underline, strikethrough, lists, blockquotes, horizontal rules, links, URL images, text and background colors, copy style, paste style, tables, clear formatting, and code view. Inline code and code blocks remain available as the `code` and `codeBlock` toolbar entries for custom profiles but are disabled by default.
+
+When HTML copied from Microsoft Word contains Word list metadata, the visual editor converts consecutive bullet and numbered paragraphs into semantic unordered and ordered lists. Inline formatting, links, Unicode text, and allowed paragraph alignment are preserved. A plain paragraph that only starts with `•` is not converted without Word metadata, which prevents normal prose from changing structure unexpectedly.
+
+`Copy style` stores the selected text's supported formatting inside the current editor. `Paste style` applies it to another selection without replacing text or using the system clipboard. It copies paragraph or heading type, alignment, blockquote state, bold, italic, underline, strikethrough, inline code, an allowed text size, and allowed text and background colors. It deliberately does not copy links, list structure, tables or cells, or images.
 
 The color picker applies allowlisted Tailwind `text-{color}-500` and `bg-{color}-500` classes to selected text. White uses Tailwind's canonical `text-white` and `bg-white` utilities because it has no `500` shade. Each section includes a reset action. Colors survive visual/code-view switching and safe server rendering without permitting arbitrary classes or inline styles.
 

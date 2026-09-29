@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.11] - 2026-09-29
+
+### Added
+
+- Convert Microsoft Word bullet and numbered list paragraphs into semantic lists during visual paste while preserving allowed inline formatting, links, Unicode text, and paragraph alignment.
+- Add `Copy style` and `Paste style` toolbar controls to the default `standard` profile. The format painter transfers supported text and block formatting without copying content, links, list structure, tables, or images.
+
+### Fixed
+
+- Preserve allowlisted `data-rte-size` spans when applying or parsing configured text sizes, including through the format painter.
+
 ## [1.3.10] - 2026-09-23
 
 ### Fixed
@@ -231,7 +242,8 @@ All notable changes to this project are documented in this file. The format foll
 - Profile-driven PHP and browser sanitization, Eloquent cast, validation rule, and safe renderer.
 - Publish command, configurable palette, tests, CI, and full English documentation.
 
-[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.10...HEAD
+[Unreleased]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.11...HEAD
+[1.3.11]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.10...v1.3.11
 [1.3.10]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.9...v1.3.10
 [1.3.9]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.8...v1.3.9
 [1.3.8]: https://github.com/arm092/laravel-rich-text-editor/compare/v1.3.7...v1.3.8

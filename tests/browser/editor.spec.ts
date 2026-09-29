@@ -8,7 +8,7 @@ const styles = resolve('dist/rich-text-editor.css')
 
 async function mount(page: Page, script: string) {
   await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Editor test</title></head><body>
-    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","textAlign","|","bold","italic","link","image","colors","clearFormatting","table","|","codeView"],"headings":[2,3,4],"textAlignments":["left","center","right","justify"],"colors":{"enabled":true,"palette":["red","blue","white"]},"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
+    <main style="max-width:900px;margin:40px auto"><form><div data-rich-text-editor data-rte-options='{"toolbar":["heading","textAlign","|","bold","italic","link","image","colors","copyStyle","pasteStyle","clearFormatting","table","|","codeView"],"headings":[2,3,4],"textAlignments":["left","center","right","justify"],"fontSizes":{"large":"Large"},"colors":{"enabled":true,"palette":["red","blue","white"]},"codeView":{"enabled":true,"format_button":true,"fullscreen":true},"links":{"schemes":["http","https","mailto","tel"],"allow_relative":true},"images":{"schemes":["http","https"],"alignments":["left","center","right"]},"tables":{"enabled":true,"horizontal_alignments":["left","center","right"],"vertical_alignments":["top","middle","bottom"],"scopes":["row","col","rowgroup","colgroup"],"max_span":100,"palette":["primary","success","error","info","graphite","ink","paper","white"]},"theme":{"primary":"#FD971F","success":"#A6E22E","error":"#F92672","info":"#66D9EF","graphite":"#272822","ink":"#060606","paper":"#F8F8F2","white":"#FFFFFF"}}'>
       <label for="content">Content</label><textarea id="content" name="content" data-rte-input><h2>Hello</h2><p>Editor content</p><img src="https://example.com/image.jpg" alt="Example"></textarea><div data-rte-mount></div>
     </div></form></main></body></html>`)
   await page.addStyleTag({ path: styles })
@@ -47,6 +47,78 @@ test('first submit synchronizes safe pasted HTML from visual and code views', as
 
   await expect.poll(() => page.evaluate(() => (window as any).__submittedHtml)).toBe(html)
   await expect(page.locator('[data-rte-input]')).toHaveValue(html)
+})
+
+test('Word list paragraphs paste as semantic bullet and numbered lists', async ({ page }) => {
+  await mount(page, basic)
+  const wordHtml = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+      <body>
+        <p class="MsoListParagraphCxSpFirst" style="text-align:justify;mso-list:l0 level1 lfo1">
+          <span style="mso-list:Ignore">•<span>&nbsp;&nbsp;</span></span><strong>Առաջին կետ</strong>
+        </p>
+        <p class="MsoListParagraphCxSpLast" style="text-align:justify;mso-list:l0 level1 lfo1">
+          <span style="mso-list:Ignore">•<span>&nbsp;&nbsp;</span></span>Երկրորդ կետ
+        </p>
+        <p class="MsoListParagraph" style="mso-list:l1 level1 lfo2">
+          <span style="mso-list:Ignore">1.<span>&nbsp;&nbsp;</span></span>Առաջին համարակալված կետ
+        </p>
+        <p class="MsoListParagraph" style="mso-list:l1 level1 lfo2">
+          <span style="mso-list:Ignore">2.<span>&nbsp;&nbsp;</span></span>Երկրորդ համարակալված կետ
+        </p>
+      </body>
+    </html>`
+
+  await page.locator('.rte-prose').click()
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A')
+  await page.evaluate((html) => {
+    const clipboardData = new DataTransfer()
+    clipboardData.setData('text/html', html)
+    clipboardData.setData('text/plain', '• Առաջին կետ\n• Երկրորդ կետ\n1. Առաջին համարակալված կետ\n2. Երկրորդ համարակալված կետ')
+    const event = new Event('paste', { bubbles: true, cancelable: true })
+    Object.defineProperty(event, 'clipboardData', { value: clipboardData })
+    document.querySelector('.rte-prose')!.dispatchEvent(event)
+  }, wordHtml)
+
+  await expect(page.locator('.rte-prose ul > li')).toHaveCount(2)
+  await expect(page.locator('.rte-prose ol > li')).toHaveCount(2)
+  await expect(page.locator('.rte-prose ul')).toContainText('Առաջին կետ')
+  await expect(page.locator('.rte-prose ul strong')).toHaveText('Առաջին կետ')
+  await expect(page.locator('.rte-prose ul > li').first().locator('p')).toHaveAttribute('data-rte-text-align', 'justify')
+  await expect(page.locator('[data-rte-input]')).not.toHaveValue(/<p[^>]*>\s*•/)
+})
+
+test('format painter copies supported styles without replacing text or links', async ({ page }) => {
+  await mount(page, basic)
+  await page.evaluate(() => {
+    const root = document.querySelector<HTMLElement>('[data-rich-text-editor]')!
+    ;(window as any).RichTextEditor.create(root).setHTML(
+      '<blockquote><h2 data-rte-text-align="right"><strong><u><span data-rte-size="large"><span class="text-red-500"><span class="bg-blue-500">Source</span></span></span></u></strong></h2></blockquote><p><a href="https://example.com"><em>Target</em></a></p>',
+    )
+  })
+
+  await expect(page.getByRole('button', { name: 'Paste style' })).toBeDisabled()
+  await page.getByText('Source', { exact: true }).click()
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Shift+End')
+  await page.getByRole('button', { name: 'Copy style' }).click()
+  await expect(page.getByRole('button', { name: 'Paste style' })).toBeEnabled()
+
+  await page.getByText('Target', { exact: true }).click()
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Shift+End')
+  await page.getByRole('button', { name: 'Paste style' }).click()
+
+  const target = page.getByText('Target', { exact: true })
+  await expect(target.locator('xpath=ancestor::strong')).toHaveCount(1)
+  await expect(target.locator('xpath=ancestor::u')).toHaveCount(1)
+  await expect(target).toHaveCSS('font-size', '18px')
+  await expect(target).toHaveCSS('color', 'rgb(251, 44, 54)')
+  await expect(target).toHaveCSS('background-color', 'rgb(48, 128, 255)')
+  await expect(target.locator('xpath=ancestor::a')).toHaveAttribute('href', 'https://example.com')
+  await expect(target.locator('xpath=ancestor::h2')).toHaveAttribute('data-rte-text-align', 'right')
+  await expect(target.locator('xpath=ancestor::blockquote')).toHaveCount(1)
+  await expect(page.locator('[data-rte-input]')).not.toHaveValue(/<em>Target<\/em>/)
 })
 
 test('enhanced bundle provides a Monokai code editor and safe apply flow', async ({ page }) => {

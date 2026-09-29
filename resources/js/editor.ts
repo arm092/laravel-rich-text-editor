@@ -1,4 +1,4 @@
-import { Editor, Extension, Mark, type Extensions, type NodeViewRendererProps } from '@tiptap/core'
+import { Editor, Mark, type Extensions, type NodeViewRendererProps } from '@tiptap/core'
 import Image from '@tiptap/extension-image'
 import { Table } from '@tiptap/extension-table/table'
 import { TableCell } from '@tiptap/extension-table/cell'
@@ -10,10 +10,26 @@ import StarterKit from '@tiptap/starter-kit'
 import { resolveTailwind500Colors } from './colors'
 import { normalizeEmpty, sanitizeHtml } from './sanitize'
 import type { CodeViewAdapter, CodeViewFactory, EditorOptions, PublicEditor } from './types'
+import { normalizeWordListHtml } from './word-paste'
 
 const instances = new WeakMap<HTMLElement, RichTextEditorController>()
 
 type ImageResizeOptions = { enabled?: boolean; min?: number; max?: number; step?: number }
+
+type CopiedStyle = {
+  bold: boolean
+  italic: boolean
+  underline: boolean
+  strike: boolean
+  code: boolean
+  textSize: string | null
+  textColor: string | null
+  backgroundColor: string | null
+  block: 'paragraph' | 'heading'
+  headingLevel: 1 | 2 | 3 | 4 | 5 | 6 | null
+  alignment: string | null
+  blockquote: boolean
+}
 
 function createAlignedImage(resize: ImageResizeOptions = {}) {
   const enabled = resize.enabled !== false
@@ -119,19 +135,21 @@ function createAlignedImage(resize: ImageResizeOptions = {}) {
   })
 }
 
-const RestrictedTextSize = Extension.create({
-  name: 'restrictedTextSize',
-  addGlobalAttributes() {
-    return [{
-      types: ['textStyle'],
-      attributes: {
-        rteSize: {
-          default: null,
-          parseHTML: (element) => element.getAttribute('data-rte-size'),
-          renderHTML: (attributes) => attributes.rteSize ? { 'data-rte-size': attributes.rteSize } : {},
-        },
+const RestrictedTextStyle = TextStyle.extend({
+  addAttributes() {
+    return {
+      rteSize: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-rte-size'),
+        renderHTML: (attributes) => attributes.rteSize ? { 'data-rte-size': attributes.rteSize } : {},
       },
-    }]
+    }
+  },
+  parseHTML() {
+    return [
+      ...(this.parent?.() ?? []),
+      { tag: 'span[data-rte-size]' },
+    ]
   },
 })
 
@@ -197,6 +215,8 @@ const BUTTONS: Record<string, { label: string; icon: string }> = {
   link: { label: 'Add link', icon: '🔗' },
   image: { label: 'Add image', icon: '<svg data-rte-icon="image" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4.5 17 4.75-4.75 3.25 3.25 2.25-2.25L19.5 18"/></svg>' },
   clearFormatting: { label: 'Clear formatting', icon: '<svg data-rte-icon="clear-formatting" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16.5 4.5 3 3a2.1 2.1 0 0 1 0 3L11 19H6.5L3 15.5a2.1 2.1 0 0 1 0-3l10.5-8a2.1 2.1 0 0 1 3 0Z"/><path d="m9 19 7.5-7.5M14 19h7"/></svg>' }, codeView: { label: 'HTML code view', icon: 'HTML' },
+  copyStyle: { label: 'Copy style', icon: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8a2 2 0 0 1 2 2v2H7a2 2 0 0 1-2-2 2 2 0 0 1 2-2Z"/><path d="M17 6h2v5H9v-1M14 11v3l-4 1v6H6v-8l8-2Z"/></svg>' },
+  pasteStyle: { label: 'Paste style', icon: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l1 3H8l1-3Z"/><path d="M6 6H4v15h16V6h-2M8 12h8M8 16h5"/></svg>' },
   table: { label: 'Table', icon: '▦' }, colors: { label: 'Text and background color', icon: 'A' },
 }
 
@@ -399,6 +419,7 @@ export class RichTextEditorController implements PublicEditor {
   private readonly notice: HTMLElement
   private readonly editor: Editor
   private codeView: CodeViewAdapter | null = null
+  private copiedStyle: CopiedStyle | null = null
   private inCodeView = false
   private sourceDirty = false
   private readonly form: HTMLFormElement | null
@@ -439,6 +460,7 @@ export class RichTextEditorController implements PublicEditor {
       editable: !(this.options.readonly || this.options.disabled),
       extensions: this.extensions(),
       editorProps: {
+        transformPastedHTML: normalizeWordListHtml,
         attributes: {
           class: 'rte-prose',
           'data-placeholder': this.options.placeholder ?? '',
@@ -521,8 +543,7 @@ export class RichTextEditorController implements PublicEditor {
         link: { openOnClick: false, defaultProtocol: 'https', HTMLAttributes: { rel: 'noopener noreferrer' } },
       }),
       createAlignedImage(this.options.images?.resize).configure({ inline: false, allowBase64: false }),
-      TextStyle,
-      RestrictedTextSize,
+      RestrictedTextStyle,
       RestrictedTextAlign.configure({
         types: ['heading', 'paragraph'],
         alignments: this.options.textAlignments ?? ['left', 'center', 'right', 'justify'],
@@ -611,6 +632,8 @@ export class RichTextEditorController implements PublicEditor {
       button.title = definition.label
       button.setAttribute('aria-label', definition.label)
       button.innerHTML = definition.icon
+      if (tool === 'pasteStyle') button.disabled = true
+      if (tool === 'copyStyle' || tool === 'pasteStyle') button.addEventListener('mousedown', (event) => event.preventDefault())
       button.addEventListener('click', () => this.execute(tool, button))
       this.toolbar.append(button)
     }
@@ -636,10 +659,56 @@ export class RichTextEditorController implements PublicEditor {
       code: () => chain.toggleCode().run(), bulletList: () => chain.toggleBulletList().run(), orderedList: () => chain.toggleOrderedList().run(),
       blockquote: () => chain.toggleBlockquote().run(), codeBlock: () => chain.toggleCodeBlock().run(), horizontalRule: () => chain.setHorizontalRule().run(),
       clearFormatting: () => chain.unsetAllMarks().clearNodes().run(), link: () => this.openLinkDialog(), image: () => this.openImageDialog(),
+      copyStyle: () => this.copyStyle(), pasteStyle: () => this.pasteStyle(),
       codeView: () => this.toggleCodeView(button),
     }
     commands[command]?.()
     this.refreshToolbar()
+  }
+
+  private copyStyle(): void {
+    const heading = this.editor.isActive('heading')
+    const block = heading ? 'heading' : 'paragraph'
+    const blockAttributes = this.editor.getAttributes(block)
+    this.copiedStyle = {
+      bold: this.editor.isActive('bold'),
+      italic: this.editor.isActive('italic'),
+      underline: this.editor.isActive('underline'),
+      strike: this.editor.isActive('strike'),
+      code: this.editor.isActive('code'),
+      textSize: this.editor.getAttributes('textStyle').rteSize ?? null,
+      textColor: this.editor.getAttributes('restrictedTextColor').color ?? null,
+      backgroundColor: this.editor.getAttributes('restrictedBackgroundColor').color ?? null,
+      block,
+      headingLevel: heading ? this.editor.getAttributes('heading').level ?? null : null,
+      alignment: blockAttributes.textAlign ?? null,
+      blockquote: this.editor.isActive('blockquote'),
+    }
+  }
+
+  private pasteStyle(): void {
+    if (!this.copiedStyle) return
+
+    const style = this.copiedStyle
+    const targetIsBlockquote = this.editor.isActive('blockquote')
+    let chain = this.editor.chain().focus()
+      .unsetBold().unsetItalic().unsetUnderline().unsetStrike().unsetCode()
+      .unsetMark('textStyle').unsetMark('restrictedTextColor').unsetMark('restrictedBackgroundColor')
+
+    chain = style.block === 'heading' && style.headingLevel
+      ? chain.setHeading({ level: style.headingLevel })
+      : chain.setParagraph()
+    chain = style.alignment ? chain.setTextAlign(style.alignment) : chain.unsetTextAlign()
+    if (targetIsBlockquote !== style.blockquote) chain = chain.toggleBlockquote()
+    if (style.bold) chain = chain.setBold()
+    if (style.italic) chain = chain.setItalic()
+    if (style.underline) chain = chain.setUnderline()
+    if (style.strike) chain = chain.setStrike()
+    if (style.code) chain = chain.setCode()
+    if (style.textSize) chain = chain.setMark('textStyle', { rteSize: style.textSize })
+    if (style.textColor) chain = chain.setMark('restrictedTextColor', { color: style.textColor })
+    if (style.backgroundColor) chain = chain.setMark('restrictedBackgroundColor', { color: style.backgroundColor })
+    chain.run()
   }
 
   private toggleCodeView(button: HTMLButtonElement): void {
@@ -1086,6 +1155,7 @@ export class RichTextEditorController implements PublicEditor {
     this.toolbar.querySelectorAll<HTMLButtonElement>('[data-rte-command]').forEach((button) => {
       const isActive = active[button.dataset.rteCommand!] ?? false
       button.classList.toggle('is-active', isActive); button.setAttribute('aria-pressed', String(isActive))
+      if (button.dataset.rteCommand === 'pasteStyle') button.disabled = this.copiedStyle === null
     })
     const heading = this.toolbar.querySelector<HTMLSelectElement>('[data-rte-control="heading"]')
     if (heading) {

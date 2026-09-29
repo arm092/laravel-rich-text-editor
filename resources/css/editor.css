@@ -34,6 +34,7 @@
   .rte-button, .rte-select { min-width: 2.15rem; height: 2.15rem; border: 1px solid transparent; border-radius: .5rem; background: transparent; color: var(--rte-graphite); font: inherit; font-size: .8125rem; cursor: pointer; transition: background .14s ease, border-color .14s ease, color .14s ease, transform .14s ease; }
   .rte-button > svg { display: block; margin: auto; }
   .rte-button:hover, .rte-select:hover { border-color: var(--rte-border); background: var(--rte-white); }
+  .rte-button:disabled { opacity: .42; cursor: not-allowed; }
   .rte-button:active { transform: translateY(1px); }
   .rte-button:focus-visible, .rte-select:focus-visible, .rte-code-action:focus-visible { outline: 2px solid var(--rte-info); outline-offset: 1px; }
   .rte-button.is-active { border-color: color-mix(in srgb, var(--rte-primary), transparent 55%); background: color-mix(in srgb, var(--rte-primary), transparent 84%); color: var(--rte-ink); }

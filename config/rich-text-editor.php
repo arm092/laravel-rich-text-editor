@@ -31,7 +31,7 @@ return [
             'toolbar' => [
                 'undo', 'redo', '|', 'heading', 'textAlign', '|', 'bold', 'italic', 'underline', 'strike',
                 '|', 'bulletList', 'orderedList', 'blockquote', 'horizontalRule',
-                '|', 'link', 'image', 'colors', 'clearFormatting', '|', 'codeView',
+                '|', 'link', 'image', 'colors', 'copyStyle', 'pasteStyle', 'clearFormatting', '|', 'codeView',
                 '|', 'table',
             ],
             'font_sizes' => [],

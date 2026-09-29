@@ -1,5 +1,9 @@
 # Upgrading
 
+## Version 1.3.11
+
+Republish the browser assets to receive semantic Microsoft Word list paste handling. Existing published configuration must add `copyStyle` and `pasteStyle` to a profile toolbar to expose the format painter controls, or intentionally republish the full configuration with `rich-text-editor:publish --force`. `Copy style` and `Paste style` are enabled by default in newly published `standard` profiles.
+
 ## Version 1.3.5
 
 Republish assets to receive the table controls, centered SVG toolbar icons, and text alignment. Existing published configuration must add `textAlign` to the desired toolbar and define `text_alignments` to expose left, center, right, and justified alignment. Full configuration republishing still requires `rich-text-editor:publish --force`.

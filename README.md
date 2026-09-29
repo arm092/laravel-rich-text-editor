@@ -126,6 +126,8 @@ Both files expose the same API: `create`, `scan`, `destroy`, `getHTML`, `setHTML
 
 Enabled tables can be resized from 20% through 100% without additional configuration and aligned left, center, or right. Their canonical `data-rte-width` and `data-rte-table-align` HTML remains compatible with strict CSP policies. Table-cell colors use the same Tailwind `500` swatches as the main color picker.
 
+The standard toolbar also includes `Copy style` and `Paste style`. Microsoft Word bullet and numbered lists pasted into the visual editor are converted to semantic HTML lists when Word list metadata is present. Existing applications must merge the two toolbar entries into published configuration and republish assets; see the [upgrading guide](docs/upgrading.md).
+
 ## Roadmap
 
 - Visual-editor dark theme with `light`, `dark`, and `auto` modes
